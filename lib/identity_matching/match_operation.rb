@@ -4,30 +4,36 @@ require "net/http"
 require 'webmock/rspec'
 require 'logger'
 
-module InfernoTemplate
+module IdentityMatching
  
-  class PatientGroup < Inferno::TestGroup
-    title 'Patient  Tests'
-    description 'Verify that the server makes Patient resources available'
-    id :patient_group
+  class MatchOperation < Inferno::TestGroup
+    title 'Match Operation Tests'
+    description 'Verify support for the $match operation required by the Patient Matching profile.'
+    id :im_patient_match_operation
 
     test do
-      title 'Server returns requested Patient resource from the Patient read interaction'
+      title 'Identity Matching Server declares support for $match operation in CapabilityStatement'
       description %(
-        Verify that Patient resources can be read from the server.
+        The Identity Matching Server SHALL declare support for Patient/$match operation in its server CapabilityStatement
       )
 
-      input :patient_id
-      # Named requests can be used by other tests
-      makes_request :patient
-
       run do
-        fhir_read(:patient, patient_id, name: :patient)
-
+        fhir_get_capability_statement
         assert_response_status(200)
-        assert_resource_type(:patient) 
-        assert resource.id == patient_id,
-               "Requested resource with id #{patient_id}, received resource with id #{resource.id}"
+        assert_resource_type(:capability_statement)
+
+        operations = resource.rest&.flat_map do |rest|
+          rest.resource
+            &.select { |r| r.type == 'Patient' && r.respond_to?(:operation) }
+            &.flat_map(&:operation)
+        end&.compact
+
+        operation_defined = operations.any? do |operation|
+          operation.definition == 'http://hl7.org/fhir/OperationDefinition/Patient-match' ||
+            ['patient', 'patient-match'].include?(operation.name.downcase)
+        end
+
+        assert operation_defined, 'Server CapabilityStatement did not declare support for $match operation in Patient resource.'
       end
     end
 
@@ -37,8 +43,9 @@ module InfernoTemplate
       description %(
         Verify that the Patient  $match resource returned from the server is a valid FHIR resource.
       )
-      #input :search_json
-      #input :patient_id
+      input :search_json,
+      title: 'Patient',
+      description: 'Patient resource used to find matches'
       output :response_json
       # Named requests can be used by other tests
       makes_request :match
@@ -58,132 +65,11 @@ module InfernoTemplate
       #  headers { 'Content-Type': 'application/fhir+json' }
      #end
       run do
-        #body = JSON.dump(search_json)
-          body = {
-            "resourceType": "Parameters",
-            "id": "example",
-            "parameter": [
-              {
-                "name": "resource",
-                "resource": {
-                  "resourceType": "Patient",
-                  "id": "1244780",
-                  "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2020-06-22T07:37:44.914+00:00",
-                    "source": "#Hep7oN0aHNPLwGdq",
-                    "tag": [
-                      {
-                        "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationValue",
-                        "code": "SUBSETTED",
-                        "display": "Resource encoded in summary mode"
-                      }
-                    ]
-                  },
-                  "identifier": [
-                    {
-                      "type": {
-                        "coding": [
-                          {
-                            "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
-                            "code": "DL",
-                            "display": "Drivers License"
-                          }
-                        ],
-                        "text": "Drivers License"
-                      },
-                      "value": "Q147604567"
-                    },
-                    {
-                      "type": {
-                        "coding": [
-                          {
-                            "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
-                            "code": "NIIP",
-                            "display": "National Insurance Payor Identifier"
-                          }
-                        ],
-                        "text": "National Insurance Payor Identifier"
-                      },
-                      "value": "9800010077"
-                    }
-                  ],
-                  "name": [
-                    {
-                      "family": "Queentin",
-                      "given": [
-                        "Vladimir"
-                      ]
-                    }
-                  ],
-                  "maritalStatus": {
-                    "coding": [
-                      {
-                        "system": "http://terminology.hl7.org/CodeSystem/v3-MaritalStatus",
-                        "code": "M"
-                      }
-                    ]
-                  },
-                  "telecom": [
-                    {
-                      "system": "phone",
-                      "value": "344-845-5689",
-                      "use": "mobile"
-                    }
-                  ],
-                  "address": [
-                    {
-                      "type": "physical",
-                      "line": [
-                        "321 South Maple Street"
-                      ],
-                      "city": "Scranton",
-                      "state": "PA",
-                      "postalCode": "18503",
-                      "use": "home"
-                    }
-                  ],
-                  "contact": [
-                    {
-                      "relationship": [
-                        {
-                          "coding": [
-                            {
-                              "system": "http://hl7.org/fhir/v2/0131",
-                              "code": "C",
-                              "display": "Emergency Contact"
-                            }
-                          ]
-                        }
-                      ],
-                      "telecom": [
-                        {
-                          "system": "phone",
-                          "value": "726-555-1094",
-                          "use": "home"
-                        }
-                      ]
-                    }
-                  ],
-                  "gender": "male",
-                  "birthDate": "1956-12-01"
-                }
-              },
-              {
-                "name": "count",
-                "valueInteger": "3"
-              },
-              {
-                "name": "onlyCertainMatches",
-                "valueBoolean": "false"
-              }
-            ]
-          }
-          { 'Content-Type': 'application/fhir+json' }
+        body = JSON.dump(search_json)
          
           response=JSON.parse(body)
           puts("patientName" +   response[:total])
-          fhir_operation("Patient/$match", body: body, client: :default, name: nil, headers: { 'Content-Type': 'application/fhir+json' })
+         fhir_operation ("Patient/$match", body: body, client: :default, name: nil, headers: { 'Content-Type': 'application/fhir+json' })
 
           
           #response_json=response[:body]
@@ -202,6 +88,77 @@ module InfernoTemplate
         puts response_json
         response=JSON.parse(response_json)
         puts("Entry Count=" +   response[:total])
+      end
+    end
+
+    test do
+      title 'Server returns a fully bundled patient records from a Patient resource'
+      description %(
+        This test will perform the $match operation on the chosen patient resource with the persist option on.
+        It will verify that all matched patients are in the patient bundle and that we are able to retrieve the bundle after it's generated.
+      )
+      # link 'https://www.hl7.org/fhir/patient-operation-match.html'
+
+      input :patient_resource
+      makes_request :match_operation
+
+    run do
+      fhir_read(:patient, patient_id)
+
+      assert_response_status(200)
+      assert_resource_type(:patient)
+      assert resource.id == patient.id,
+              "Requested resource with id #{patient.id}, received resource with id #{resource.id}"
+
+      assert_valid_resource(profile_url: 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient')
+
+      patient_out = resource
+      matched_patients = []
+      patient_out.each_element do |value, meta, _path|
+        next if meta['type'] != 'searchset'
+        next if value.reference.blank?
+
+        matched_patients << value
+      end
+
+      fhir_operation("Patient/#{patient_out.id}/$match?persist=true", name: :match_operation)
+      assert_response_status(200)
+      assert_resource_type(:bundle)
+    end
+
+    test do
+      title 'Server returns Bundle resource for Patient/$match operation'
+      description %(
+        Server return valid Bundle resource as successful result of $match operation
+        POST [base]/Patient/$match
+      )
+      # link 'https://www.hl7.org/fhir/patient-operation-match.html'
+      uses_request :match_operation
+
+      run do
+        skip_if !resource.is_a?(FHIR::Bundle), 'No Bundle returned from match operation'
+
+        assert_valid_resource(profile_url: 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient')
+      end
+    end
+
+    test do
+      title 'Server returns Bundle resource containing valid Patient entry'
+      description %(
+        Server return valid Patient resource in the Bundle as first entry
+      )
+      # link 'https://www.hl7.org/fhir/patient-operation-match.html'
+      uses_request :match_operation
+
+      run do
+        skip_if !resource.is_a?(FHIR::Bundle), 'No Bundle returned from match operation'
+
+        assert resource.entry.length.positive?, 'Bundle has no entries'
+
+        entry = resource.entry.first
+
+        assert entry.resource.is_a?(FHIR::Patient), 'The first entry in the Bundle is not a Patient'
+        assert_valid_resource(resource: entry, profile_url: 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient')
       end
     end
   end
