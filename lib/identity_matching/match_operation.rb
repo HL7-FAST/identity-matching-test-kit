@@ -35,80 +35,8 @@ module InfernoTemplate
  
       run do
         body = JSON[search_json] 
-        body ={
-          "resourceType": "Parameters",
-          "id": "example",
-          "parameter": [
-            {
-              "name": "resource",
-              "resource": {
-                "resourceType": "Patient",
-                "id": "1244780",
-                "identifier": [
-                  {
-                    "type": {
-                      "coding": [
-                        {
-                          "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
-                          "code": "DL",
-                          "display": "Drivers License"
-                        }
-                      ],
-                      "text": "Drivers License"
-                    },
-                    "value": "Q147604567"
-                  }
-                ],
-                "name": [
-                  {
-                    "family": "Queentin",
-                    "given": [
-                      "Vladimir"
-                    ]
-                  }
-                ],
-                "maritalStatus": {
-                  "coding": [
-                    {
-                      "system": "http://terminology.hl7.org/CodeSystem/v3-MaritalStatus",
-                      "code": "M"
-                    }
-                  ]
-                },
-                "telecom": [
-                  {
-                    "system": "phone",
-                    "value": "344-845-5689",
-                    "use": "mobile"
-                  }
-                ],
-                "address": [
-                  {
-                    "type": "physical",
-                    "line": [
-                      "321 South Maple Street"
-                    ],
-                    "city": "Scranton",
-                    "state": "PA",
-                    "postalCode": "18503",
-                    "use": "home"
-                  }
-                ],
-                "gender": "male",
-                "birthDate": "1956-12-01"
-              }
-            },
-            {
-              "name": "count",
-              "valueInteger": "3"
-            },
-            {
-              "name": "onlyCertainMatches",
-              "valueBoolean": "false"
-            }
-          ]
-        }
         
+
           #puts("request url=" +  url)
           #puts("request body= #{body}" )
           fhir_operation("Patient/$match", body: body, client: :default, name: nil, headers: { 'Content-Type': 'application/fhir+json' })
