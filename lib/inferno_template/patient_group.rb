@@ -13,7 +13,7 @@ module InfernoTemplate
 			id :patient_group
 			test do
 				title 'Test whether it is possible to gain access to patient data without authenticating'
-				description %(Test whether it is possible to gain access to patient data without authenticating)  
+				description %(Test whether it is possible to gain access to patient data without authenticating - Here we will attempt to make an api call without providing the authentication credentials)  
 
 				input :search_json ,
 				type: 'textarea'
@@ -64,6 +64,7 @@ module InfernoTemplate
 
 					output response_json: response[:body] 
 					assert_response_status(200) 
+					assert_valid_bundle_entries(resource_types: 'Patient')
 					 
 			  end
 			end
