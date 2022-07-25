@@ -267,7 +267,7 @@ module InfernoTemplate
 									end	#end do	
 								end #end if ( identifierList != :null )
 
-								profileList= entry.dig("resource","meta","profile"]
+								profileList= entry.dig("resource","meta","profile")
 								if ( !profileList.nil? )
 									idi_patient_l1=false
 									idi_patient = false
