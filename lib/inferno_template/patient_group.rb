@@ -120,8 +120,8 @@ module InfernoTemplate
 						puts "#{item}"
 						puts "#{item} entry: #{item["entry"]}" 
 						
-						curr_score= item["resource"]["score"]
-						curr_id=item["resource"]["id"]
+						curr_score=item.dig("resource","score")
+						curr_id=item.dig("resource","id")
 						#puts  "Current Patient ID=#{curr_id}  Patient Score=#{curr_score}"
 						#puts  "Current Patient ID=#{curr_id} "
 						if i  > 0 
@@ -154,12 +154,12 @@ module InfernoTemplate
 					responseJSON = JSON.parse(response_json) 
 					responseJSON["entry"].each do |item|		 
 						puts "got here"
-						patientLinkList= item["resource"]["link"] 
+						patientLinkList= item.dig("resource","link") 
 						puts "****patient Link List=#{patientLinkList}"
 						if !patientLinkList.nil?
 							patientLinkList.each do |patient_link|
 								puts "patient_link=#{patient_link}"
-								patientURL=patient_link["other"]["reference"]
+								patientURL=patient_link("other","reference")
 								puts "PatientLink URL=#{patientURL}"
 								patientID=patientURL.sub("Patient/","");
  
@@ -197,9 +197,9 @@ module InfernoTemplate
 
 								# Get Patient Name, Address, DOB and telecom info
 
-								resourceID=entry["resource"]["id"]
-								givenName=entry["resource"]["name"][0]["given"][0]
-								familyName=entry["resource"]["name"][0]["family"] 
+								resourceID=entry.dig("resource","id")
+								givenName=entry.dig("resource","name",0,"given",0)
+								familyName=entry.dig("resource","name",0,"family") 
 								homeAddressLine=""
 								homeAddressCity=""
 								emailAddress=""
@@ -209,10 +209,10 @@ module InfernoTemplate
 								dl_id=""
 								stid_id=""
 								photo=""
-								photo=entry["resource"]["photo"]
+								photo=entry.dig("resource","photo")
 								telecomArray=[]
 
-								telecomArray=entry["resource"]["telecom"]
+								telecomArray=entry.dig("resource","telecom")
 								puts ("telecomArray = #{telecomArray}")
 								if (  !telecomArray.nil?  ) 
 									telecomArray.each do |telecom|
@@ -225,8 +225,8 @@ module InfernoTemplate
 								end #end if 
 								
 								
-								birthDate=entry["birthDate"]
-								identifierList= entry["resource"]["identifier"] 
+								birthDate=entry.dig("birthDate")
+								identifierList= entry.dig("resource","identifier") 
 
 								#get Patient Address Info
 								addressList= entry["address"]
@@ -244,8 +244,8 @@ module InfernoTemplate
 								if ( !identifierList.nil? )
 									identifierList.each do |identifier|
 										
-										thisID=identifier["type"]["text"]
-										codingArray=identifier["type"]["coding"]
+										thisID=identifier.dig("type","text")
+										codingArray=identifier.dig("type","coding")
 										if ( !codingArray.nil? )
 											codingArray.each do |coding|
 												code=coding["code"]
@@ -267,7 +267,7 @@ module InfernoTemplate
 									end	#end do	
 								end #end if ( identifierList != :null )
 
-								profileList= entry["resource"]["meta"]["profile"]
+								profileList= entry.dig("resource","meta","profile"]
 								if ( !profileList.nil? )
 									idi_patient_l1=false
 									idi_patient = false
