@@ -1,12 +1,12 @@
 Gem::Specification.new do |spec|
-  spec.name          = 'inferno_template'
+  spec.name          = 'identity_matching'
   spec.version       = '0.0.1'
   spec.authors       = ['Inferno Team']
   spec.email         = ['inferno@groups.mitre.org']
   spec.date          = Time.now.utc.strftime('%Y-%m-%d')
   spec.summary       = 'Identity Matching Test Kit'
   spec.description   = 'Identity Matching Test Kit'
-  spec.homepage      = 'https://github.com/inferno-framework/inferno-template'
+  spec.homepage      = 'https://github.com/HL7-FAST/inferno-template'
   spec.license       = 'Apache-2.0'
   spec.add_runtime_dependency 'inferno_core', '~> 0.3.0'
   spec.add_development_dependency 'database_cleaner-sequel', '~> 1.8'
