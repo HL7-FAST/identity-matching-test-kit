@@ -4,8 +4,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ['Inferno Team']
   spec.email         = ['inferno@groups.mitre.org']
   spec.date          = Time.now.utc.strftime('%Y-%m-%d')
-  spec.summary       = 'Inferno Test Kit Template'
-  spec.description   = 'Inferno Test Kit Template'
+  spec.summary       = 'Identity Matching Test Kit'
+  spec.description   = 'Identity Matching Test Kit'
   spec.homepage      = 'https://github.com/inferno-framework/inferno-template'
   spec.license       = 'Apache-2.0'
   spec.add_runtime_dependency 'inferno_core', '~> 0.3.0'
