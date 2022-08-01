@@ -13,16 +13,13 @@ module InfernoTemplate
 			id :patient_group
 			test do
 				title 'Test whether it is possible to gain access to patient data without authenticating'
-				description %(Test whether it is possible to gain access to patient data without authenticating - Here we will attempt to make an api call without providing the authentication credentials)  
-
+				description %(Test whether it is possible to gain access to patient data without authenticating - 
+				This Test attempts to make a $match api call  without providing the authentication credentials)  
+				input :access_token;
 				input :search_json ,
 				type: 'textarea'
 				 
-				
-#				fhir_client  do
- #   			  url :url
- #   			end	
-							
+					
 		   
 				run do 
 					body = JSON[search_json] 
@@ -356,6 +353,7 @@ module InfernoTemplate
 									end
 
 						end 
+						output results
 	  
 				end
 				
