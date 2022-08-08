@@ -3,16 +3,21 @@ require "json"
 require "net/http"
 require 'webmock/rspec'
 require 'logger'
+require_relative 'match_request'
 
 module IdentityMatching
  
-  class MatchOperation < Inferno::TestGroup
+  class PatientMatching < Inferno::TestGroup
+    #include MatchRequest
+
     title 'Match Operation Tests'
     description 'Verify support for the $match operation required by the Patient Matching profile.'
     id :im_patient_match_operation
 
+=begin
     test do
-      title 'Identity Matching Server declares support for $match operation in CapabilityStatement'
+      id = 'capability_statement_for_match'
+      title 'Identity Matching Server declares support for $match operation in Capability Statement'
       description %(
         The Identity Matching Server SHALL declare support for Patient/$match operation in its server CapabilityStatement
       )
@@ -36,49 +41,128 @@ module IdentityMatching
         assert operation_defined, 'Server CapabilityStatement did not declare support for $match operation in Patient resource.'
       end
     end
-
-    
+=end
     test do
+      id :patient_match_base
       title 'Patient match is valid'
       description %(
         Verify that the Patient  $match resource returned from the server is a valid FHIR resource.
       )
+=begin
       input :search_json,
-      title: 'Patient',
-      description: 'Patient resource used to find matches'
+        title: 'Patient resource',
+        description: 'Patient resource used to find matches'
+=end
+      input :profile_level,
+        title: "Profile (Base | L0 | L1)",
+        optional: false
+
+      input :certain_matches_only,
+        title: "Return only certain matches (yes | no)",
+        default: 'no'
+
+      input :given_name,
+        title: 'First Name',
+        optional: true,
+        default: ''
+      input :middle_name,
+        title: 'Middle Name',
+        optional: true,
+        default: ''
+      input :last_name,
+        title: 'Last Name',
+        optional: true
+      input :date_of_birth,
+        title: 'Date of Birth',
+        optional: true,
+        default: ''
+      input :sex,
+        title: 'Sex (assigned at birth) (F | M)',
+        optional: true,
+        default: ''
+
+      input :phone_number,
+        title: 'Phone Number',
+        optional: true,
+        default: ''
+
+      input :email,
+        title: 'Email Address',
+        optional: true,
+        default: ''
+
+      input :street_address,
+        title: 'Address - Street',
+        optional: true,
+        default: ''
+      input :city,
+        title: 'Address - City',
+        optional: true,
+        default: ''
+      input :state,
+        title: 'Address - State',
+        optional: true,
+        default: ''
+      input :postal_code,
+        title: 'Address - Postal Code',
+        optional: true,
+        default: ''
+
+      input :passport_number,
+        title: 'Passport Number',
+        optional: true
+
+      input :state_id,
+        title: 'State ID',
+        optional: true
+
+      input :drivers_license_number,
+        title: "Driver's License Number",
+        optional: true
+      
+      input :insurance_number,
+        title: 'Insurance Subscriber Identifier',
+        optional: true
+
+      input :medical_record_number,
+        title: 'Medical Record Number',
+        optional: true
+
+      input :master_patient_index,
+        title: 'Master Patient Index',
+        optional: true
+
       output :response_json
       # Named requests can be used by other tests
-      makes_request :match
+      makes_request :match_operation
       
       
        # create a "default" client for a group
-      # fhir_client do
-       #  url :url
-      #end
+       
       logger= Logger.new(STDOUT)
       # create a named client for a group
-      fhir_client  do
-        url :url
-      end
-      #fhir_client :with_custom_header do
-      #  url :url
-      #  headers { 'Content-Type': 'application/fhir+json' }
-     #end
-      run do
-        body = JSON.dump(search_json)
-         
-          response=JSON.parse(body)
-          puts("patientName" +   response[:total])
-         fhir_operation ("Patient/$match", body: body, client: :default, name: nil, headers: { 'Content-Type': 'application/fhir+json' })
 
-          
+      run do
+         #fhir_operation ("Patient/$match", body: body, client: :default, name: match_operation, headers: { 'Content-Type': 'application/fhir+json' })
+          puts "Driver's License: #{drivers_license_number}"
+          @match_request = MatchRequest.new( last_name, given_name, middle_name, date_of_birth, sex, phone_number, email, street_address, city, state, postal_code, passport_number, drivers_license_number, state_id, master_patient_index, medical_record_number, insurance_number)
+          puts "Driver's License: #{@match_request.drivers_license_number}"
+          puts "Identifiers: #{@match_request.identifiers}"
+
+          MATCH_PARAMETER = ERB.new(File.read("resources/search_parameter.json.erb"))
+          @json_request = MATCH_PARAMETER.result_with_hash({model: @match_request})
+
+          #body = @match_request.build_request_fhir
+          #puts "JSON Request #{body}"
+
           #response_json=response[:body]
-          output response_json: response[:body]
-          assert_response_status(200)
-          assert_resource_type(:bundle)
+          #output response_json: response[:body]
+          #assert_response_status(200)
+          #assert_valid_bundle_entries(resource_types: 'Patient')
              
       end
     end
+=begin
     test do
       input :response_json
       title 'Patient match - determines whether or not the $match function returns every valid record'
@@ -98,9 +182,7 @@ module IdentityMatching
         It will verify that all matched patients are in the patient bundle and that we are able to retrieve the bundle after it's generated.
       )
       # link 'https://www.hl7.org/fhir/patient-operation-match.html'
-
-      input :patient_resource
-      makes_request :match_operation
+      uses_request :match_operation
 
     run do
       fhir_read(:patient, patient_id)
@@ -161,5 +243,6 @@ module IdentityMatching
         assert_valid_resource(resource: entry, profile_url: 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient')
       end
     end
+=end
   end
 end
