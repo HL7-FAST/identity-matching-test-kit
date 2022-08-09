@@ -1,0 +1,93 @@
+{
+  "resourceType": "Parameters",
+  "id": "example-<%= model.id %>",
+  "parameter": [
+    {
+      "name": "resource",
+      "resource": {
+        "resourceType": "Patient",
+        "meta": {
+          "profile" : ["<%= model.profile %>"]
+        },
+
+		<% if model.identifiers != nil %>
+        "identifier": [
+		  <% model.identifiers.each_with_index do |identifier, idx| %>
+          {
+            "type": {
+              "coding": [
+                {
+                  "system": "<%= identifier[:system] %>",
+                  "code": "<%= identifier[:code] %>",
+                  "display": "<%= identifier[:display] %>"
+                }
+              ],
+              "text": "<%= identifier[:display] %>"
+            },
+            "value": "<%= identifier[:value] %>"
+          }<% if idx + 1 < model.identifiers.length %>,<% end %>
+		  <% end %> <%# close identifiers.each %>
+        ],
+		<% end %>
+        <% if model.given_name != nil %>
+        "name": [
+          {
+            "family": "<%= model.last_name %>",
+            "given": ["<%= model.given_name %>"]
+          }
+        ],
+        <% else %>
+        "name": [
+          {
+            "family": "<%= model.last_name %>"
+          }
+        ],
+		<% end %>
+		<% if model.phone_number != nil %>
+		"telecom": [ {
+			"system": "phone",
+			"value": "<%= model.phone_number %>",
+			"use": "mobile"
+		} ],
+		<% end %>
+		<% if model.email != nil && !model.email.empty? %>
+		"telecom": [ {
+			"system": "email",
+			"value": "<%= model.email %>"
+		} ],
+		<% end %>
+		<% if !model.address.strip.empty? %>
+        "address": [
+          {
+            "type": "physical",
+            <% if model.street_address != nil %>
+                  "line": ["<%= model.street_address %>"],
+            <% if model.city != nil %>
+                    "city": "<%= model.city %>",
+            <% end %>
+            <% if model.state != nil %>
+              "state": "<%= model.state %>",
+            <% end %>
+            <% if model.postal_code != nil %>
+              "postalCode": "<%= model.postal_code %>",
+            <% end %>
+            "use": "home"
+          }
+        ],
+        <% end %>
+		<% if model.sex != nil %>
+		"gender": "<%= model.sex %>",
+		<% end %>
+		<% if model.language != nil %>
+		"language": "<%= model.language %>",
+		<% end %>
+
+        "birthDate": "<%= model.date_of_birth %>"
+      }
+    },
+    {
+      "name": "onlyCertainMatches",
+      "valueBoolean": "<%= model.certain_matches_only %>"
+    }
+  ]
+}

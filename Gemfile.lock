@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    inferno_template (0.0.1)
+    identity_matching (0.0.1)
       inferno_core (~> 0.3.0)
 
 GEM
@@ -244,7 +244,7 @@ PLATFORMS
 DEPENDENCIES
   database_cleaner-sequel (~> 1.8)
   factory_bot (~> 6.1)
-  inferno_template!
+  identity_matching!
   rspec (~> 3.10)
   webmock (~> 3.11)
 
