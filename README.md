@@ -1,7 +1,6 @@
-# Inferno Template
+# Identity Matching Test Kit
 
-This is a template repository for an
-[Inferno](https://github.com/inferno-community/inferno-core) test kit.
+This is an [Inferno](https://github.com/inferno-community/inferno-core) test kit for FAST identity matching.
 
 ## Instructions
 

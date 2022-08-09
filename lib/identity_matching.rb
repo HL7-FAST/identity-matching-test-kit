@@ -14,16 +14,26 @@ module IdentityMatching
     input :url,
         title: 'FHIR endpoint',
         description: 'URL of FHIR endpoint'
+
+    
+    input :access_token
     
     # All FHIR requests in this suite will use this FHIR client
     fhir_client do
       url :url
     end
 
+    fhir_client :with_custom_headers do
+      url :url
+      bearer_token :access_token
+    end
+
+    # Tests
+
     group do
-      id :identity_matching_group
-      title 'Identity Matching IG Validations'
-      description 'Verify Identity Matching IG'
+      id :capability_statement
+      title 'Capability Statement'
+      description 'Verify that the server has a CapabilityStatement'
 
       test do
         id :capability_statement_read
@@ -31,7 +41,6 @@ module IdentityMatching
         description 'Read CapabilityStatement from /metadata endpoint'
 
         run do
-          #fhir_client.set_no_auth
           fhir_get_capability_statement
 
           assert_response_status(200)
