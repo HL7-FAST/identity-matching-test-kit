@@ -61,9 +61,10 @@
           {
             "type": "physical",
             <% if model.street_address != nil %>
-                  "line": ["<%= model.street_address %>"],
+              "line": ["<%= model.street_address %>"],
+			<% end %>
             <% if model.city != nil %>
-                    "city": "<%= model.city %>",
+              "city": "<%= model.city %>",
             <% end %>
             <% if model.state != nil %>
               "state": "<%= model.state %>",
@@ -76,12 +77,8 @@
         ],
         <% end %>
 		<% if model.sex != nil %>
-		"gender": "<%= model.sex %>",
+		  "gender": "<%= model.sex %>",
 		<% end %>
-		<% if model.language != nil %>
-		"language": "<%= model.language %>",
-		<% end %>
-
         "birthDate": "<%= model.date_of_birth %>"
       }
     },

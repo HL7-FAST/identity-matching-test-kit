@@ -17,11 +17,10 @@ module IdentityMatching
         description: 'URL of FHIR endpoint',
         default: 'http://host.docker.internal:3000/fhir'
 
-    
     input :access_token,
       title: 'Bearer Token',
       default: 'Y3YWq2l08kvFqy50fQJY'
-    
+
     # All FHIR requests in this suite will use this FHIR client
     fhir_client do
       url :url
@@ -53,8 +52,8 @@ module IdentityMatching
 
         end
       end
-  
-    end    
+
+    end
     group from: :im_patient_match_operation
 
     # Specify identity match test groups
