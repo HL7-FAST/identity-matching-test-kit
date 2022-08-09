@@ -5,13 +5,8 @@ Gem::Specification.new do |spec|
   spec.email         = ['inferno@groups.mitre.org']
   spec.date          = Time.now.utc.strftime('%Y-%m-%d')
   spec.summary       = 'Identity Matching Test Kit'
-<<<<<<< HEAD
-  spec.description   = 'Identity Matching Test Kit'
-  spec.homepage      = 'https://github.com/inferno-framework/inferno-template'
-=======
   spec.description   = 'Inferno Test Kit for Identity Matching implementation guide by HL7 FHIR At Scale Taskforce.'
   spec.homepage      = 'http://build.fhir.org/ig/HL7/fhir-identity-matching-ig/'
->>>>>>> origin/main
   spec.license       = 'Apache-2.0'
   spec.add_runtime_dependency 'inferno_core', '~> 0.3.0'
   spec.add_development_dependency 'database_cleaner-sequel', '~> 1.8'

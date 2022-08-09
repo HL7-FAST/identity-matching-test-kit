@@ -23,11 +23,12 @@ module IdentityMatching
       url :url
     end
 
+=begin
     fhir_client :with_custom_headers do
       url :url
       bearer_token :access_token
     end
-
+=end
     # Tests
 
     group do
@@ -50,7 +51,7 @@ module IdentityMatching
       end
   
     end    
-    group from: :im_patient_match_operation
+    #group from: :im_patient_match_operation
 
     # Specify identity match test groups
     #group from: :digital_identity
