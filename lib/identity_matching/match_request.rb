@@ -1,3 +1,5 @@
+require 'json'
+
 module IdentityMatching
     class MatchRequest
 
@@ -6,10 +8,12 @@ module IdentityMatching
         attr_accessor( :last_name, :given_name, :middle_name, :date_of_birth, :sex, :phone_number, :email, :street_address, :city, :state, :postal_code, 
             :passport_number, :drivers_license_number, :state_id, :master_patient_index, :medical_record_number, :insurance_number)
 
-        MATCH_PARAMETER = ERB.new(File.read("resources/search_parameter.json.erb"))
+        attr_accessor( :certain_matches_only)
+
+        MATCH_PARAMETER = ERB.new(File.read("resources/test_search_parameter.json.erb"))
 
         def initialize (aLastName, aGivenName, aMiddleName, aDOB, aSex, aPhone, aEmail, aStreetAddress, aCity, aState, aPostalCode, aPassportNumber,
-            aDriversLicenseNumber, aStateID, aMasterPatientIndex, aMedicalRecordNumber, aInsuranceNumber) 
+            aDriversLicenseNumber, aStateID, aMasterPatientIndex, aMedicalRecordNumber, aInsuranceNumber, aProfileLevel, aCertainMatchesOnly) 
             @last_name = aLastName
             @given_name = aGivenName
             @middle_name = aMiddleName
@@ -30,6 +34,10 @@ module IdentityMatching
             identifiers()
 
             address()
+
+            profile_url( aProfileLevel)
+
+            certain_matches_only_to_boolean ( aCertainMatchesOnly)
         end
 =begin
         def initialize 
@@ -54,8 +62,9 @@ module IdentityMatching
         end
 
         def address
-        return "#{street_address}\n#{city} #{state} #{postal_code}"
+            return "#{street_address}\n#{city} #{state} #{postal_code}"
         end
+
         def profile_url (aProfileLevel)
             @profile_level = aProfileLevel
             @profile = case aProfileLevel
@@ -103,6 +112,10 @@ module IdentityMatching
             else 
                 matches_profile = false
             end
+        end
+
+        def certain_matches_only_to_boolean (aCertainMatchesOnly)
+            @certain_matches_only = aCertainMatchesOnly.downcase! == 'yes' ? true : false
         end
     end
 end

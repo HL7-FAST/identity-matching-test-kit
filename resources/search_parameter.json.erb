@@ -6,14 +6,11 @@
       "name": "resource",
       "resource": {
         "resourceType": "Patient",
-        "id": "<%= model.id %>",
         "meta": {
-          "profile" : [
-			  "http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient"
-		  ]
+          "profile" : ["<%= model.profile %>"]
         },
 
-		<% if model.identifiers? %>
+		<% if model.identifiers != nil %>
         "identifier": [
 		  <% model.identifiers.each_with_index do |identifier, idx| %>
           {
@@ -32,7 +29,7 @@
 		  <% end %> <%# close identifiers.each %>
         ],
 		<% end %>
-        <% if model.has? :given_name %>
+        <% if model.given_name != nil %>
         "name": [
           {
             "family": "<%= model.last_name %>",
@@ -46,14 +43,14 @@
           }
         ],
 		<% end %>
-		<% if model.phone_number %>
+		<% if model.phone_number != nil %>
 		"telecom": [ {
 			"system": "phone",
 			"value": "<%= model.phone_number %>",
 			"use": "mobile"
 		} ],
 		<% end %>
-		<% if model.email && !model.email.empty? %>
+		<% if model.email != nil && !model.email.empty? %>
 		"telecom": [ {
 			"system": "email",
 			"value": "<%= model.email %>"
@@ -63,25 +60,25 @@
         "address": [
           {
             "type": "physical",
-            <% if model.street_address %>
+            <% if model.street_address != nil %>
                   "line": ["<%= model.street_address %>"],
-            <% if model.city %>
+            <% if model.city != nil %>
                     "city": "<%= model.city %>",
             <% end %>
-            <% if model.state %>
+            <% if model.state != nil %>
               "state": "<%= model.state %>",
             <% end %>
-            <% if model.postal_code %>
+            <% if model.postal_code != nil %>
               "postalCode": "<%= model.postal_code %>",
             <% end %>
             "use": "home"
           }
         ],
         <% end %>
-		<% if model.sex %>
+		<% if model.sex != nil %>
 		"gender": "<%= model.sex %>",
 		<% end %>
-		<% if model.language %>
+		<% if model.language != nil %>
 		"language": "<%= model.language %>",
 		<% end %>
 
@@ -90,7 +87,7 @@
     },
     {
       "name": "onlyCertainMatches",
-      "valueBoolean": "true" <%# TODO: make optional %>
+      "valueBoolean": "<%= model.certain_matches_only %>"
     }
   ]
 }

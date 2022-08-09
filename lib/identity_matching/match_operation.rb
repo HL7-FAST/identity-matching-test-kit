@@ -55,7 +55,8 @@ module IdentityMatching
 =end
       input :profile_level,
         title: "Profile (Base | L0 | L1)",
-        optional: false
+        optional: false,
+        default: 'L0'
 
       input :certain_matches_only,
         title: "Return only certain matches (yes | no)",
@@ -63,12 +64,10 @@ module IdentityMatching
 
       input :given_name,
         title: 'First Name',
-        optional: true,
-        default: ''
+        optional: true
       input :middle_name,
         title: 'Middle Name',
-        optional: true,
-        default: ''
+        optional: true
       input :last_name,
         title: 'Last Name',
         optional: true
@@ -78,35 +77,28 @@ module IdentityMatching
         default: ''
       input :sex,
         title: 'Sex (assigned at birth) (F | M)',
-        optional: true,
-        default: ''
+        optional: true
 
       input :phone_number,
         title: 'Phone Number',
-        optional: true,
-        default: ''
+        optional: true
 
       input :email,
         title: 'Email Address',
-        optional: true,
-        default: ''
+        optional: true
 
       input :street_address,
         title: 'Address - Street',
-        optional: true,
-        default: ''
+        optional: true
       input :city,
         title: 'Address - City',
-        optional: true,
-        default: ''
+        optional: true
       input :state,
         title: 'Address - State',
-        optional: true,
-        default: ''
+        optional: true
       input :postal_code,
         title: 'Address - Postal Code',
-        optional: true,
-        default: ''
+        optional: true
 
       input :passport_number,
         title: 'Passport Number',
@@ -144,13 +136,19 @@ module IdentityMatching
 
       run do
          #fhir_operation ("Patient/$match", body: body, client: :default, name: match_operation, headers: { 'Content-Type': 'application/fhir+json' })
-          puts "Driver's License: #{drivers_license_number}"
-          @match_request = MatchRequest.new( last_name, given_name, middle_name, date_of_birth, sex, phone_number, email, street_address, city, state, postal_code, passport_number, drivers_license_number, state_id, master_patient_index, medical_record_number, insurance_number)
+          @match_request = MatchRequest.new( last_name, given_name, middle_name, date_of_birth, sex, phone_number, email, street_address, city, state, postal_code, 
+            passport_number, drivers_license_number, state_id, master_patient_index, medical_record_number, insurance_number, profile_level, certain_matches_only)
           puts "Driver's License: #{@match_request.drivers_license_number}"
           puts "Identifiers: #{@match_request.identifiers}"
-
+          puts "Profile: #{@match_request.profile}"
+          puts "Certain Matches Only: #{@match_request.certain_matches_only}"
+=begin
           MATCH_PARAMETER = ERB.new(File.read("resources/search_parameter.json.erb"))
           @json_request = MATCH_PARAMETER.result_with_hash({model: @match_request})
+=end
+          
+          file  = File.read("resources/test_search_parameter.json.erb")
+          @json_request = JSON.parse(file)
 
           #body = @match_request.build_request_fhir
           #puts "JSON Request #{body}"
