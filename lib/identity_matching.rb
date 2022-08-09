@@ -3,6 +3,7 @@ require_relative 'identity_matching/match_operation'
 #require_relative 'identity_matching/digital_identity'
 #require_relative 'identity_matching/identity_assurance'
 #require_relative 'identity_matching/patient_matching'
+require_relative 'identity_matching/match_request'
 
 module IdentityMatching
   class Suite < Inferno::TestSuite
@@ -13,10 +14,13 @@ module IdentityMatching
     # This input will be available to all tests in this suite
     input :url,
         title: 'FHIR endpoint',
-        description: 'URL of FHIR endpoint'
+        description: 'URL of FHIR endpoint',
+        default: 'http://host.docker.internal:3000/fhir'
 
     
-    input :access_token
+    input :access_token,
+      title: 'Bearer Token',
+      default: 'Y3YWq2l08kvFqy50fQJY'
     
     # All FHIR requests in this suite will use this FHIR client
     fhir_client do
@@ -51,7 +55,7 @@ module IdentityMatching
       end
   
     end    
-    #group from: :im_patient_match_operation
+    group from: :im_patient_match_operation
 
     # Specify identity match test groups
     #group from: :digital_identity
