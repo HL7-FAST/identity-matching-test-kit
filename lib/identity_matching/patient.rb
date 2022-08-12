@@ -3,7 +3,7 @@ module IdentityMatching
         attr_accessor( :last_name, :given_name, :middle_name, :date_of_birth, :sex, :phone_number, :email, :street_address, :city, :state, :postal_code, 
             :passport_number, :drivers_license_number, :state_id, :master_patient_index, :medical_record_number, :insurance_subscriber_number)
         attr_reader (:identifier_code, :identifier_system, :identifier_display, :identifier_value)
-        
+
         def initialize (aLastName, aGivenName, aMiddleName, aDOB, aPhone, aEmail, aStreetAddress, aCity, aState, aPostalCode, aPassportNumber,
             aDriversLicenseNumber, aStateID, aMasterPatientIndex, aMedicalRecordNumber, aInsuranceSubscriberNumber) 
             @last_name = aLastName

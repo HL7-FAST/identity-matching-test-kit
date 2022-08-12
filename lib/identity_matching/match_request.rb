@@ -2,19 +2,22 @@ require 'json'
 require 'erb'
 
 module IdentityMatching
+
+	# helper class for MatchOperation TestGroup
     class MatchRequest
 
-        attr_accessor( :profile_level, :profile, :json_request)
+        attr_accessor( :profile_level, :profile, :json_request )
 
-        attr_accessor( :last_name, :given_name, :middle_name, :date_of_birth, :sex, :phone_number, :email, :street_address, :city, :state, :postal_code, 
-            :passport_number, :drivers_license_number, :state_id, :master_patient_index, :medical_record_number, :insurance_number)
+        attr_accessor( :last_name, :given_name, :middle_name, :date_of_birth, :sex, :phone_number, :email, :street_address, :city, :state, :postal_code,
+            :passport_number, :drivers_license_number, :state_id, :master_patient_index, :medical_record_number, :insurance_number )
 
-        attr_accessor( :certain_matches_only)
+        attr_accessor( :certain_matches_only )
 
-        MATCH_PARAMETER = ERB.new(File.read("resources/test_search_parameter.json.erb"))
+		resource_path = File.join(__dir__, '..', '..', 'resources', 'search_parameter.json.erb')
+        MATCH_PARAMETER = ERB.new(File.read(resource_path))
 
         def initialize (aLastName, aGivenName, aMiddleName, aDOB, aSex, aPhone, aEmail, aStreetAddress, aCity, aState, aPostalCode, aPassportNumber,
-            aDriversLicenseNumber, aStateID, aMasterPatientIndex, aMedicalRecordNumber, aInsuranceNumber, aProfileLevel, aCertainMatchesOnly) 
+            aDriversLicenseNumber, aStateID, aMasterPatientIndex, aMedicalRecordNumber, aInsuranceNumber, aProfileLevel, aCertainMatchesOnly)
             @last_name = aLastName
             @given_name = aGivenName
             @middle_name = aMiddleName
@@ -38,14 +41,13 @@ module IdentityMatching
 
             profile_url( aProfileLevel)
 
-            certain_matches_only_to_boolean ( aCertainMatchesOnly)
+            certain_matches_only_to_boolean ( aCertainMatchesOnly )
         end
-=begin
-        def initialize 
-            @patient = Patient.new (:last_name, :given_name, :middle_name, :date_of_birth, :sex, :phone_number, :email, :street_address, :city, :state, :postal_code, 
-            :passport_number, :drivers_license_number, :state_id, :master_patient_index, :medical_record_number, :insurance_number)
-        end
-=end
+
+		# for FHIR artifact id generation
+		def id
+			rand(9000)
+		end
 
         def identifiers
             ret = []
@@ -103,14 +105,14 @@ module IdentityMatching
 
         def input_matches_profile?
             matches_profile = false
-            case 
+            case
             when profile_level = 'Base'
                 matches_profile = true
             when profile_level = 'L0' && input_weight >= 10
                 matches_profile = true
             when profile_level = 'L0' && input_weight >= 20
                 matches_profile = true
-            else 
+            else
                 matches_profile = false
             end
         end

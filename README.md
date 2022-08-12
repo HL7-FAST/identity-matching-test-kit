@@ -1,9 +1,25 @@
 # Identity Matching Test Kit
 
-This is an [Inferno](https://github.com/inferno-community/inferno-core) test kit for FAST identity matching.
+This is an [Inferno](https://github.com/inferno-community/inferno-core) test kit by HL7 FHIR At Scale Taskforce (FAST)
+for [digital identity and patient matching implementation guide](http://build.fhir.org/ig/HL7/fhir-identity-matching-ig/).
+It launches a dockerized application that can query a locally running server and report conformance to the FHIR implementation
+guide specifications.
 
-## Instructions
+## Dependencies
+ - [Docker](https://www.docker.com/)
 
+## Quickstart
+ 1. Launch Docker daemon
+ 2. Clone repository: `git clone https://github.com/HL7-FAST/identity-matching-test-kit`
+    + TODO: ruby gem download option
+ 3. Enter repository: `cd identity-matching-test-kit`
+ 4. Build test kit container: `./setup.sh`
+ 5. Launch test kit: `./run.sh`
+ 6. Launch your identity matching server implementation
+ 7. Go to http://localhost:8081 and use application to test your own server
+    + TODO: present seeded database or issue Patient create requests
+
+## Developer Instructions
 - Clone this repo.
 - Write your tests in the `lib` folder.
 - Put the `package.tgz` for the IG you're writing tests for in
@@ -13,9 +29,9 @@ This is an [Inferno](https://github.com/inferno-community/inferno-core) test kit
 - Run `setup.sh` in this repo to pull the needed docker images and set up the
   database.
 - Run `run.sh` to build your tests and run inferno.
-- Navigate to `http://localhost` to access Inferno, where your test suite will
+- Navigate to `http://localhost:8081` to access Inferno, where your test suite will
   be available. To access the FHIR resource validator, navigate to
-  `http://localhost/validator`.
+  `http://localhost:8081/validator`.
 
 ## Documentation
 - [Inferno documentation](https://inferno-framework.github.io/inferno-core/)
