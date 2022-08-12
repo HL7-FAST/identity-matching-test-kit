@@ -31,11 +31,11 @@ module IdentityMatching
 
 	group from: :capability_statement
 
-    group from: :im_patient_match_operation
+    #group from: :im_patient_match_operation
 
-    group from: :digital_identity
     group from: :identity_assurance
     group from: :patient_matching
+    group from: :digital_identity
     group from: :fhir_artifacts
 
   end
