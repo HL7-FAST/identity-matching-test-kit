@@ -8,23 +8,14 @@ module IdentityMatching
     id :digital_identity
 
     test do
-      id :exist
-      title 'I exist'
-      description 'Fill with your test here'
-
-      run do
-		assert true, "error... how?!"
-      end
-    end
-
-    test do
       id :unique_digital_identity
       title 'Digital Identity SHALL always be unique in context of digital service'
       description ''
 
       run do
 		# TODO
-		raise StandardError, "Not Implemented"
+		# raise StandardError, "Not Implemented"
+		skip
       end
     end
 

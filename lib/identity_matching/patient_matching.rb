@@ -3,7 +3,7 @@ module IdentityMatching
   class PatientMatching < Inferno::TestGroup
 
     title 'Patient Matching Tests'
-    description 'Execute a $match operation at /Patient/$match endpoint on behalf of a Master Patient Index (MPI). '
+    description 'Execute a $match operation at /Patient/$match endpoint on a Master Patient Index (MPI). '
     id :patient_matching
 
 	test do
