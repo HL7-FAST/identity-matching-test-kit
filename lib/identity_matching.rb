@@ -1,4 +1,5 @@
 require 'inferno/dsl/oauth_credentials'
+require_relative 'identity_matching/technical'
 require_relative 'identity_matching/capability_statement'
 require_relative 'identity_matching/match_operation'
 require_relative 'identity_matching/digital_identity'
@@ -6,6 +7,7 @@ require_relative 'identity_matching/identity_assurance'
 require_relative 'identity_matching/patient_matching'
 require_relative 'identity_matching/match_request'
 require_relative 'identity_matching/fhir_artifacts'
+require_relative 'identity_matching/helper'
 
 module IdentityMatching
   class Suite < Inferno::TestSuite
@@ -29,6 +31,8 @@ module IdentityMatching
       url :url
     end
 
+    # Now load actual test groups
+    group from: :technical
     group from: :capability_statement
 
     #group from: :im_patient_match_operation
@@ -39,4 +43,5 @@ module IdentityMatching
     group from: :fhir_artifacts
 
   end
+
 end
