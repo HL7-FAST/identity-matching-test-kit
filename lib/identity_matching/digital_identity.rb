@@ -44,7 +44,8 @@ module IdentityMatching
 
       run do
 		# TODO
-		pass; info "This test is an automatic pass, but service provider must conform to specification above."
+		pass
+		info "This test is an automatic pass, but service provider must conform to specification above."
       end
     end
 
@@ -55,7 +56,8 @@ module IdentityMatching
 
       run do
 		# TODO
-		pass; info "This test is an automatic pass, but service provider must conform to specification above."
+		pass
+		info "This test is an automatic pass, but service provider must conform to specification above."
       end
     end
 
@@ -67,7 +69,8 @@ module IdentityMatching
 
       run do
 		# TODO
-		pass; info "This test is an automatic pass, but service provider must conform to specification above."
+		pass
+		info "This test is an automatic pass, but service provider must conform to specification above."
       end
     end
 
@@ -79,7 +82,8 @@ module IdentityMatching
 
       run do
 		# TODO
-		pass; info "This test is an automatic pass, but service provider must conform to specification above."
+		pass
+		info "This test is an automatic pass, but service provider must conform to specification above."
       end
     end
 
@@ -90,7 +94,8 @@ module IdentityMatching
 
       run do
 		# TODO
-		pass; info "This test is an automatic pass, but service provider must conform to specification above."
+		pass
+		info "This test is an automatic pass, but service provider must conform to specification above."
       end
     end
 
@@ -102,7 +107,8 @@ module IdentityMatching
 
       run do
 		# TODO
-		pass; info "This test is an automatic pass, but service provider must conform to specification above."
+		pass
+		info "This test is an automatic pass, but service provider must conform to specification above."
       end
     end
 
@@ -114,7 +120,8 @@ module IdentityMatching
 
       run do
 		# TODO
-		pass; info "This test is an automatic pass, but service provider must conform to specification above."
+		pass
+		info "This test is an automatic pass, but service provider must conform to specification above."
       end
     end
 
@@ -126,7 +133,8 @@ module IdentityMatching
 
       run do
 		# TODO
-		pass; info "This test is an automatic pass, but service provider must conform to specification above."
+		pass
+		info "This test is an automatic pass, but service provider must conform to specification above."
       end
     end
 
@@ -138,7 +146,8 @@ module IdentityMatching
 
       run do
 		# TODO
-		pass; info "This test is an automatic pass, but service provider must conform to specification above."
+		pass
+		info "This test is an automatic pass, but service provider must conform to specification above."
       end
     end
 
@@ -150,7 +159,8 @@ module IdentityMatching
 
       run do
 		# TODO
-		pass; info "This test is an automatic pass, but service provider must conform to specification above."
+		pass
+		info "This test is an automatic pass, but service provider must conform to specification above."
       end
     end
 
@@ -161,7 +171,8 @@ module IdentityMatching
 
 	  run do
 		# TODO
-		pass; info "This test is an automatic pass, but service provider must conform to specification above."
+		pass
+		info "This test is an automatic pass, but service provider must conform to specification above."
 	  end
 	end
 
@@ -173,7 +184,8 @@ module IdentityMatching
 
       run do
 		# TODO
-		pass; info "This test is an automatic pass, but service provider must conform to specification above."
+		pass
+		info "This test is an automatic pass, but service provider must conform to specification above."
       end
     end
 
@@ -185,7 +197,8 @@ module IdentityMatching
 
       run do
 		# TODO
-		pass; info "This test is an automatic pass, but service provider must conform to specification above."
+		pass
+		info "This test is an automatic pass, but service provider must conform to specification above."
       end
     end
 
@@ -197,7 +210,8 @@ module IdentityMatching
 
       run do
 		# TODO
-		pass; info "This test is an automatic pass, but service provider must conform to specification above."
+		pass
+		info "This test is an automatic pass, but service provider must conform to specification above."
       end
     end
 
@@ -209,7 +223,8 @@ module IdentityMatching
 
       run do
 		# TODO
-		pass; info "This test is an automatic pass, but service provider must conform to specification above."
+		pass
+		info "This test is an automatic pass, but service provider must conform to specification above."
       end
     end
 
@@ -221,7 +236,8 @@ module IdentityMatching
 
       run do
 		# TODO
-		pass; info "This test is an automatic pass, but service provider must conform to specification above."
+		pass
+		info "This test is an automatic pass, but service provider must conform to specification above."
       end
     end
 
@@ -233,7 +249,8 @@ module IdentityMatching
 
       run do
 		# TODO
-		pass; info "This test is an automatic pass, but service provider must conform to specification above."
+		pass
+		info "This test is an automatic pass, but service provider must conform to specification above."
       end
     end
 
@@ -245,7 +262,8 @@ module IdentityMatching
 
       run do
 		# TODO
-		pass; info "This test is an automatic pass, but service provider must conform to specification above."
+		pass
+		info "This test is an automatic pass, but service provider must conform to specification above."
       end
     end
 
@@ -257,7 +275,8 @@ module IdentityMatching
 
       run do
 		# TODO
-		pass; info "This test is an automatic pass, but service provider must conform to specification above."
+		pass
+		info "This test is an automatic pass, but service provider must conform to specification above."
       end
     end
 
@@ -269,7 +288,8 @@ module IdentityMatching
 
       run do
 		# TODO
-		pass; info "This test is an automatic pass, but service provider must conform to specification above."
+		pass
+		info "This test is an automatic pass, but service provider must conform to specification above."
       end
     end
 
@@ -281,7 +301,8 @@ module IdentityMatching
 
       run do
 		# TODO
-		pass; info "This test is an automatic pass, but service provider must conform to specification above."
+		pass
+		info "This test is an automatic pass, but service provider must conform to specification above."
       end
     end
 
