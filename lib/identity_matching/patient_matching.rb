@@ -37,8 +37,6 @@ module IdentityMatching
       end
     end
 
-
-
     test do
       id :patient_match_base
       title 'Patient match is valid'
@@ -194,18 +192,19 @@ module IdentityMatching
       end
 
     test do
-      title 'Server returns Bundle resource for Patient/$match operation'
-      description %(
+      title('Server returns Bundle resource for Patient/$match operation')
+      description <<~DESC
         Server return valid Bundle resource as successful result of $match operation
         POST [base]/Patient/$match
-      )
+      DESC
+
       # link 'https://www.hl7.org/fhir/patient-operation-match.html'
-      uses_request :match_operation
+      uses_request(:match_operation)
 
       run do
-        skip_if !resource.is_a?(FHIR::Bundle), 'No Bundle returned from match operation'
+        skip_if( !resource.is_a?(FHIR::Bundle), 'No Bundle returned from match operation' )
 
-        assert_valid_resource(profile_url: 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient')
+        assert_valid_resource({ :profile_url => 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient'})
       end
     end
 
@@ -362,3 +361,5 @@ module IdentityMatching
 
 
   end
+end
+end
