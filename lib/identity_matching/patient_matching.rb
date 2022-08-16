@@ -29,7 +29,7 @@ module IdentityMatching
     test do
       id :transmitting_identity
       title 'The transmitter of identity attributes with an asserted assurance level SHALL verify the attributes at that assurance level or be consistent with other evidence'
-
+      # TODO desc
 
       run do
         info "This test is an automatic pass, please see ABOUT."
@@ -120,10 +120,7 @@ module IdentityMatching
       # Named requests can be used by other tests
       makes_request :match_operation
 
-      # create a "default" client for a group
-
-      logger= Logger.new(STDOUT)
-      # create a named client for a group
+      #logger= Logger.new(STDOUT)
 
       run do
           @match_request = MatchRequest.new( last_name, given_name, middle_name, date_of_birth, sex, phone_number, email, street_address, city, state, postal_code,
@@ -131,15 +128,13 @@ module IdentityMatching
 
           #puts "Driver's License: #{@match_request.drivers_license_number}"
           #puts "Identifiers: #{@match_request.identifiers}"
-          puts "DEBUG: Profile: #{@match_request.profile}"
+          #puts "DEBUG: Profile: #{@match_request.profile}"
           #puts "Certain Matches Only: #{@match_request.certain_matches_only}"
 
           resource_path = File.join( __dir__, '..', '..', 'resources', 'search_parameter.json.erb')
           match_parameter = ERB.new(File.read(resource_path))
           @json_request = match_parameter.result_with_hash({model: @match_request})
           puts "DEBUG: #{@json_request}"
-
-
 
       end
     end
@@ -149,7 +144,8 @@ module IdentityMatching
     test do
       input :response_json
       title 'Patient match - determines whether or not the $match function returns every valid record'
-      description %(Match output SHOULD contain every record of every candidate identity, subject to volume limits
+      description %Q(
+        Match output SHOULD contain every record of every candidate identity, subject to volume limits
       )
       run do
         puts response_json
@@ -172,8 +168,7 @@ module IdentityMatching
 
         assert_response_status(200)
         assert_resource_type(:patient)
-        assert resource.id == patient.id,
-                "Requested resource with id #{patient.id}, received resource with id #{resource.id}"
+        assert resource.id == patient.id, "Requested resource with id #{patient.id}, received resource with id #{resource.id}"
 
         assert_valid_resource(profile_url: 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient')
 
@@ -190,21 +185,23 @@ module IdentityMatching
         assert_response_status(200)
         assert_resource_type(:bundle)
       end
+    end
 
     test do
-      title('Server returns Bundle resource for Patient/$match operation')
+      title 'Server returns Bundle resource for Patient/$match operation'
       description <<~DESC
         Server return valid Bundle resource as successful result of $match operation
         POST [base]/Patient/$match
       DESC
 
       # link 'https://www.hl7.org/fhir/patient-operation-match.html'
-      uses_request(:match_operation)
+      uses_request :match_operation
 
       run do
         skip_if( !resource.is_a?(FHIR::Bundle), 'No Bundle returned from match operation' )
 
         assert_valid_resource({ :profile_url => 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient'})
+        skip
       end
     end
 
@@ -361,5 +358,4 @@ module IdentityMatching
 
 
   end
-end
 end
