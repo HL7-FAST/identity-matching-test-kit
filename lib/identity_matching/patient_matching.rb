@@ -136,22 +136,33 @@ module IdentityMatching
           @json_request = match_parameter.result_with_hash({model: @match_request})
           puts "DEBUG: #{@json_request}"
 
+          fhir_operation('Patient/$match', body: @json_request, name: :match_operation);
+
       end
     end
 
 
 
     test do
-      input :response_json
+
+      # Use saved request/response from fhir_operation call in previous test
+      uses_request :match_operation
+
       title 'Patient match - determines whether or not the $match function returns every valid record'
       description %Q(
         Match output SHOULD contain every record of every candidate identity, subject to volume limits
       )
+
       run do
+        response_json = resource.to_json # resource is body from response as FHIR::Model
+
         puts response_json
-        response=JSON.parse(response_json)
-        puts("Entry Count=" +   response[:total])
+        response = JSON.parse(response_json)
+        puts("Entry Count=" + response[:total])
+
+        raise StandardError, "TODO: complete"
       end
+
     end
 
     test do
