@@ -1,15 +1,19 @@
 require 'inferno/dsl/oauth_credentials'
+require_relative 'identity_matching/technical'
+require_relative 'identity_matching/capability_statement'
 require_relative 'identity_matching/match_operation'
-#require_relative 'identity_matching/digital_identity'
-#require_relative 'identity_matching/identity_assurance'
-#require_relative 'identity_matching/patient_matching'
+require_relative 'identity_matching/digital_identity'
+require_relative 'identity_matching/identity_assurance'
+require_relative 'identity_matching/patient_matching'
 require_relative 'identity_matching/match_request'
+require_relative 'identity_matching/fhir_artifacts'
+require_relative 'identity_matching/helper'
 
 module IdentityMatching
   class Suite < Inferno::TestSuite
-    id :im
+    id :identity_matching
     title 'Identity Matching'
-    description 'Test suite for Identity Matching'
+    description 'Test Suite for Digital Identity & Patient Matching FHIR Implementation Guide'
 
     # This input will be available to all tests in this suite
     input :url,
@@ -18,47 +22,26 @@ module IdentityMatching
         default: 'http://host.docker.internal:3000/fhir'
 
     input :access_token,
-      title: 'Bearer Token',
-      default: 'Y3YWq2l08kvFqy50fQJY'
+        title: 'Bearer Token',
+        default: 'Y3YWq2l08kvFqy50fQJY',
+        optional: true
 
     # All FHIR requests in this suite will use this FHIR client
     fhir_client do
       url :url
     end
 
-=begin
-    fhir_client :with_custom_headers do
-      url :url
-      bearer_token :access_token
-    end
-=end
-    # Tests
+    # Now load actual test groups
+    group from: :technical
+    group from: :capability_statement
 
-    group do
-      id :capability_statement
-      title 'Capability Statement'
-      description 'Verify that the server has a CapabilityStatement'
+    #group from: :im_patient_match_operation
 
-      test do
-        id :capability_statement_read
-        title 'Read CapabilityStatement'
-        description 'Read CapabilityStatement from /metadata endpoint'
+    group from: :identity_assurance
+    group from: :patient_matching
+    group from: :digital_identity
+    group from: :fhir_artifacts
 
-        run do
-          fhir_get_capability_statement
-
-          assert_response_status(200)
-          assert_resource_type(:capability_statement)
-
-        end
-      end
-
-    end
-    group from: :im_patient_match_operation
-
-    # Specify identity match test groups
-    #group from: :digital_identity
-    #group from: :identity_assurance
-    #group from: :patient_matching
   end
+
 end
