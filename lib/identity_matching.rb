@@ -26,6 +26,17 @@ module IdentityMatching
         default: 'Y3YWq2l08kvFqy50fQJY',
         optional: true
 
+    input :strict,
+      title: 'Strict testing (include SHOULD and MAY cases)',
+      type: 'radio',
+      default: 'false',
+      options: {
+        list_options: [
+          { label: 'True', value: true },
+          { label: 'False', value: false }
+        ]
+      }
+
     # All FHIR requests in this suite will use this FHIR client
     fhir_client do
       url :url

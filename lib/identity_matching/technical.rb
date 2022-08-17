@@ -14,7 +14,9 @@ module IdentityMatching
     id :technical
 
     http_client do
-        url :url # from test suite input
+        url :url                    # from test suite input
+        bearer_token :access_token
+        headers 'application' => 'Content-Type/application+fhir'
     end
 
     test do
@@ -50,6 +52,18 @@ module IdentityMatching
         # check response is FHIR bundle with atleast 1 Patient
         fail("Expected FHIR Bundle in response") if patients_fhir.resourceType != 'Bundle'
         fail("Expected patient entries in bundle") if patients_fhir.total < 1
+      end
+    end
+
+    # TODO remove - this is for my own sake
+    test do
+      title 'Test Kit is in Strict mode'
+      id :not_strict
+      description "This test shall execute ALL test cases if in strict mode, else it will omit SHOULD and MAY test cases."
+
+      run do
+        omit_if strict?
+        pass
       end
     end
 

@@ -1,8 +1,9 @@
-
+require_relative 'helper'
 
 module IdentityMatching
   class FHIRArtifacts < Inferno::TestGroup
 
+    include IdentityMatching::Helper
 
     # test group metadata
     title 'FHIR Artifacts Tests'
@@ -18,8 +19,14 @@ module IdentityMatching
 
 
     # input fields for all tests in group
-    input :fhir_parameters,
-      description: "FHIR Parameters resource in JSON for $match"
+    #input :fhir_parameters,
+    #  description: "FHIR Parameters resource in JSON for $match",
+    #  type: :textarea
+
+    # filler until we figure out what TODO
+    def fhir_parameters
+        return load_resource('test_queries/parameters1.json')
+    end
 
     # helper functions
     def patient( params )
