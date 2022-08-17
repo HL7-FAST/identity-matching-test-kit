@@ -11,6 +11,8 @@ require_relative 'identity_matching/helper'
 
 module IdentityMatching
   class Suite < Inferno::TestSuite
+    include IdentityMatching::Helper
+
     id :identity_matching
     title 'Identity Matching'
     description 'Test Suite for Digital Identity & Patient Matching FHIR Implementation Guide'
@@ -25,6 +27,17 @@ module IdentityMatching
         title: 'Bearer Token',
         default: 'Y3YWq2l08kvFqy50fQJY',
         optional: true
+
+    input :strict,
+      title: 'Strict testing (include SHOULD and MAY cases)',
+      type: 'radio',
+      default: 'false',
+      options: {
+        list_options: [
+          { label: 'True', value: true },
+          { label: 'False', value: false }
+        ]
+      }
 
     # All FHIR requests in this suite will use this FHIR client
     fhir_client do

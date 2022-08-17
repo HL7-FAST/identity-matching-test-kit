@@ -5,13 +5,38 @@ require "net/http"
 require "webmock/rspec"
 require "logger"
 require_relative "match_request"
+require_relative "helper"
+
 module IdentityMatching
   class PatientMatching < Inferno::TestGroup
 
+    # import all functions defined in module Helper
+    include IdentityMatching::Helper
+
+    # test group metadata
     title 'Patient Matching Tests'
     description 'Execute a $match operation at /Patient/$match endpoint on a Master Patient Index (MPI). '
     id :patient_matching
 
+    # filler functions to replace input (for now)
+    def expectedResultCnt
+      1
+    end
+
+    def search_json
+      load_resource('test_queries/parameters1.json')
+    end
+
+    def response_json
+      if !!resource # may get defined by uses_request
+        return resource.to_json
+      else
+        patient = FHIR.from_contents( load_resource('test_patients/patient1.json') )
+        return FHIR::Bundle.new({'id' => 1, 'type' => 'searchset', 'entry' => [], 'total' => 0})
+      end
+    end
+
+    # test cases
     test do
       id :end_user_authorization
       title 'Patient-initiated workflows SHALL require end-user authorization'
@@ -40,118 +65,33 @@ module IdentityMatching
     test do
       id :patient_match_base
       title 'Patient match is valid'
-      description %(
-        Verify that the Patient  $match resource returned from the server is a valid FHIR resource.
-      )
+      description "Verify that the Patient $match resource returned from the server is a valid FHIR resource."
 
-      input :profile_level,
-        title: "Profile (Base | L0 | L1)",
-        optional: false,
-        default: 'L0'
-
-      input :certain_matches_only,
-        title: "Return only certain matches (Yes | No)",
-        default: 'No'
-
-      input :given_name,
-        title: 'First Name',
-        optional: true
-      input :middle_name,
-        title: 'Middle Name',
-        optional: true
-      input :last_name,
-        title: 'Last Name',
-        optional: true
-      input :date_of_birth,
-        title: 'Date of Birth',
-        optional: true,
-        default: ''
-      input :sex,
-        title: 'Sex (assigned at birth) (F | M)',
-        optional: true
-
-      input :phone_number,
-        title: 'Phone Number',
-        optional: true
-
-      input :email,
-        title: 'Email Address',
-        optional: true
-
-      input :street_address,
-        title: 'Address - Street',
-        optional: true
-      input :city,
-        title: 'Address - City',
-        optional: true
-      input :state,
-        title: 'Address - State',
-        optional: true
-      input :postal_code,
-        title: 'Address - Postal Code',
-        optional: true
-
-      input :passport_number,
-        title: 'Passport Number',
-        optional: true
-
-      input :state_id,
-        title: 'State ID',
-        optional: true
-
-      input :drivers_license_number,
-        title: "Driver's License Number",
-        optional: true
-
-      input :insurance_number,
-        title: 'Insurance Subscriber Identifier',
-        optional: true
-
-      input :medical_record_number,
-        title: 'Medical Record Number',
-        optional: true
-
-      input :master_patient_index,
-        title: 'Master Patient Index',
-        optional: true
-
-      output :response_json
-
-      # Named requests can be used by other tests
       makes_request :match_operation
 
-      #logger= Logger.new(STDOUT)
-
       run do
-          @match_request = MatchRequest.new( last_name, given_name, middle_name, date_of_birth, sex, phone_number, email, street_address, city, state, postal_code,
-            passport_number, drivers_license_number, state_id, master_patient_index, medical_record_number, insurance_number, profile_level, certain_matches_only)
 
-          #puts "Driver's License: #{@match_request.drivers_license_number}"
-          #puts "Identifiers: #{@match_request.identifiers}"
-          #puts "DEBUG: Profile: #{@match_request.profile}"
-          #puts "Certain Matches Only: #{@match_request.certain_matches_only}"
+          json_request = load_resource('test_queries/parameters1.json')
+          puts "======================="
+          puts "DEBUG: #{json_request}"
+          puts "======================="
 
-          resource_path = File.join( __dir__, '..', '..', 'resources', 'search_parameter.json.erb')
-          match_parameter = ERB.new(File.read(resource_path))
-          @json_request = match_parameter.result_with_hash({model: @match_request})
-          puts "DEBUG: #{@json_request}"
+          fhir_operation('Patient/$match', body: json_request, name: :match_operation);
 
-          fhir_operation('Patient/$match', body: @json_request, name: :match_operation);
-
+          assert_response_status(200)
+          assert_valid_resource
       end
     end
 
-
-
     test do
-
-      # Use saved request/response from fhir_operation call in previous test
-      uses_request :match_operation
-
+      id :every_valid_record
       title 'Patient match - determines whether or not the $match function returns every valid record'
       description %Q(
         Match output SHOULD contain every record of every candidate identity, subject to volume limits
       )
+
+      # Use saved request/response from fhir_operation call in previous test
+      uses_request :match_operation
 
       run do
         response_json = resource.to_json # resource is body from response as FHIR::Model
@@ -238,13 +178,11 @@ module IdentityMatching
 
     test do
       title 'Test whether it is possible to gain access to patient data without authenticating'
-      description %(Test whether it is possible to gain access to patient data without authenticating - 
-      This Test attempts to make a $match api call  without providing the authentication credentials)  
-      input :access_token;
-      input :search_json ,
-        type: 'textarea'
-
-
+      description %(Test whether it is possible to gain access to patient data without authenticating -
+      This Test attempts to make a $match api call  without providing the authentication credentials)
+      #input :access_token;
+      #input :search_json ,
+      #  type: 'textarea'
 
       run do
         body = JSON[search_json]
@@ -260,10 +198,11 @@ module IdentityMatching
       Verify that the Patient  $match resource returned from the server is a valid FHIR resource.
       )
 
-      input 	:search_json ,
-            type: 'textarea'
-      output 	:custom_headers
-      output 	:response_json
+      #input 	:search_json ,
+      #      type: 'textarea'
+      #output 	:custom_headers
+      #output 	:response_json
+
       # Named requests can be used by other tests
       makes_request :match
 
@@ -274,7 +213,7 @@ module IdentityMatching
 
         responseBody= response[:body]
 
-        output response_json: response[:body]
+        #output response_json: response[:body]
         assert_response_status(200)
         assert_valid_bundle_entries(resource_types: 'Patient')
 
@@ -282,13 +221,15 @@ module IdentityMatching
     end
 
     test do
-      input :expectedResultCnt
-      input :response_json
-      output :numberOfRecordsReturned
+      #input :expectedResultCnt
+      #input :response_json
+      #output :numberOfRecordsReturned
       title 'Patient match - determines whether or not the $match function returns every valid record'
       description %(Match output SHOULD contain every record of every candidate identity, subject to volume limits
       )
-      uses_request :match
+
+      uses_request :match_operation
+
       run do
 
         #puts response_json
@@ -298,18 +239,20 @@ module IdentityMatching
         puts "number of records returned in bundle ---- #{numberOfRecordsReturned} "
         puts "number of records expected in bundle ---- #{expectedResultCnt} "
         assert numberOfRecordsReturned.to_i() == expectedResultCnt.to_i(), "Incorrect Number of Records returned"
-        output numberOfRecordsReturned: numberOfRecordsReturned
+        #output numberOfRecordsReturned: numberOfRecordsReturned
 
       end
 
     end
 
     test do
-      input :expectedResultCnt
-      input :response_json
+      #input :expectedResultCnt
+      #input :response_json
       title 'Determine whether or not the records are sorted by ID and Score'
       description %(Match output SHOULD return records sorted by score      )
-      uses_request :match
+
+      uses_request :match_operation
+
       run do
 
         i =0
@@ -340,9 +283,11 @@ module IdentityMatching
     end
 
     test do
-      input :response_json
+      #input :response_json
       title 'Determine whether or not  the patient.link field references an underlying patient'
       description %(Determine whether or not  the patient.link field references an underlying patient    )
+
+      uses_request :match_operation
 
       run do
 

@@ -15,9 +15,12 @@ guide specifications.
  3. Enter repository: `cd identity-matching-test-kit`
  4. Build test kit container: `./setup.sh`
  5. Launch test kit: `./run.sh`
- 6. Launch your identity matching server implementation
+ 6. Launch your identity matching server implementation (ideally in test mode)
  7. Go to http://localhost:8081 and use application to test your own server
-    + TODO: present seeded database or issue Patient create requests
+
+Note: If the server does not support Patient create, you must insert all the FHIR Pateint records in
+resources/test_patients/ into your database.
+
 
 ## Developer Instructions
 - Clone this repo.

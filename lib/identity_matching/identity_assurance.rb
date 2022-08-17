@@ -7,16 +7,6 @@ module IdentityMatching
     description 'Digital identity assurance for the modern age and complex healthcare market.'
     id :identity_assurance
 
-    input :strict,
-      title: 'Strict testing (include SHOULD and MAY cases)',
-      type: 'radio',
-      default: 'false',
-      options: {
-        list_options: [
-          { label: 'Strict', value: true }
-        ]
-      }
-
     test do
       id :nist_800_63
       title 'Conforms to NIST 800-63'
