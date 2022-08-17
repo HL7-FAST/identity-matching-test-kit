@@ -10,11 +10,6 @@ module IdentityMatching
       File.read(filepath)
     end
 
-    def strict?
-      strict() == 'false' or strict() === false
-    end
-
-
   end
 end
 

@@ -1,3 +1,4 @@
+require 'inferno/dsl/oauth_credentials'
 require_relative 'helper'
 
 module IdentityMatching
@@ -62,7 +63,7 @@ module IdentityMatching
       description "This test shall execute ALL test cases if in strict mode, else it will omit SHOULD and MAY test cases."
 
       run do
-        omit_if strict?
+        omit_if strict == 'false' or strict === false
         pass
       end
     end

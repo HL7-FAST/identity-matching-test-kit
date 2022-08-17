@@ -10,12 +10,33 @@ require_relative "helper"
 module IdentityMatching
   class PatientMatching < Inferno::TestGroup
 
+    # import all functions defined in module Helper
     include IdentityMatching::Helper
 
+    # test group metadata
     title 'Patient Matching Tests'
     description 'Execute a $match operation at /Patient/$match endpoint on a Master Patient Index (MPI). '
     id :patient_matching
 
+    # filler functions to replace input (for now)
+    def expectedResultCnt
+      1
+    end
+
+    def search_json
+      load_resource('test_queries/parameters1.json')
+    end
+
+    def response_json
+      if !!resource # may get defined by uses_request
+        return resource.to_json
+      else
+        patient = FHIR.from_contents( load_resource('test_patients/patient1.json') )
+        return FHIR::Bundle.new({'id' => 1, 'type' => 'searchset', 'entry' => [], 'total' => 0})
+      end
+    end
+
+    # test cases
     test do
       id :end_user_authorization
       title 'Patient-initiated workflows SHALL require end-user authorization'
@@ -157,13 +178,11 @@ module IdentityMatching
 
     test do
       title 'Test whether it is possible to gain access to patient data without authenticating'
-      description %(Test whether it is possible to gain access to patient data without authenticating - 
-      This Test attempts to make a $match api call  without providing the authentication credentials)  
-      input :access_token;
-      input :search_json ,
-        type: 'textarea'
-
-
+      description %(Test whether it is possible to gain access to patient data without authenticating -
+      This Test attempts to make a $match api call  without providing the authentication credentials)
+      #input :access_token;
+      #input :search_json ,
+      #  type: 'textarea'
 
       run do
         body = JSON[search_json]
@@ -179,10 +198,10 @@ module IdentityMatching
       Verify that the Patient  $match resource returned from the server is a valid FHIR resource.
       )
 
-      input 	:search_json ,
-            type: 'textarea'
-      output 	:custom_headers
-      output 	:response_json
+      #input 	:search_json ,
+      #      type: 'textarea'
+      #output 	:custom_headers
+      #output 	:response_json
 
       # Named requests can be used by other tests
       makes_request :match
@@ -194,7 +213,7 @@ module IdentityMatching
 
         responseBody= response[:body]
 
-        output response_json: response[:body]
+        #output response_json: response[:body]
         assert_response_status(200)
         assert_valid_bundle_entries(resource_types: 'Patient')
 
@@ -202,13 +221,15 @@ module IdentityMatching
     end
 
     test do
-      input :expectedResultCnt
-      input :response_json
-      output :numberOfRecordsReturned
+      #input :expectedResultCnt
+      #input :response_json
+      #output :numberOfRecordsReturned
       title 'Patient match - determines whether or not the $match function returns every valid record'
       description %(Match output SHOULD contain every record of every candidate identity, subject to volume limits
       )
+
       uses_request :match_operation
+
       run do
 
         #puts response_json
@@ -218,15 +239,15 @@ module IdentityMatching
         puts "number of records returned in bundle ---- #{numberOfRecordsReturned} "
         puts "number of records expected in bundle ---- #{expectedResultCnt} "
         assert numberOfRecordsReturned.to_i() == expectedResultCnt.to_i(), "Incorrect Number of Records returned"
-        output numberOfRecordsReturned: numberOfRecordsReturned
+        #output numberOfRecordsReturned: numberOfRecordsReturned
 
       end
 
     end
 
     test do
-      input :expectedResultCnt
-      input :response_json
+      #input :expectedResultCnt
+      #input :response_json
       title 'Determine whether or not the records are sorted by ID and Score'
       description %(Match output SHOULD return records sorted by score      )
 
@@ -262,9 +283,11 @@ module IdentityMatching
     end
 
     test do
-      input :response_json
+      #input :response_json
       title 'Determine whether or not  the patient.link field references an underlying patient'
       description %(Determine whether or not  the patient.link field references an underlying patient    )
+
+      uses_request :match_operation
 
       run do
 

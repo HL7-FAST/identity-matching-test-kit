@@ -11,6 +11,8 @@ require_relative 'identity_matching/helper'
 
 module IdentityMatching
   class Suite < Inferno::TestSuite
+    include IdentityMatching::Helper
+
     id :identity_matching
     title 'Identity Matching'
     description 'Test Suite for Digital Identity & Patient Matching FHIR Implementation Guide'
