@@ -10,18 +10,29 @@ module IdentityMatching
     test do
       id :unique_digital_identity
       title 'Digital Identity SHALL always be unique in context of digital service'
-      description ''
+      description <<~DESC
+        A digital service provider can construct their own digital identity of patients (or any other healthcare actor) to manage
+        their own transactions with the patient. In this case the digital identity construct of the service provider must be unique
+        in that context or service. For example a SQL database of users may use an autoserial integer primary key as their digital
+        identifier, and each row in the table will be a unique digital identity. The primary key does not have to be globally unique
+        (such as a UUID). This must be enforced on the system level rather than server level.
+      DESC
 
       run do
-        # TODO
-        raise StandardError, "Not Implemented"
+        pass
+        info "This test is an automatic pass, see ABOUT."
       end
     end
 
     test do
       id :not_real_life
       title "Digital Identity SHALL NOT require subject's real life identity to be evident"
-      description ''
+      description <<~DESC
+        When the service provider assigns a digital identifier to a user, it cannot require the user to prove their unique real-life
+        identity, nor deny new users from onboarding the digital identifier system due to a perceived real-identity conflict. In
+        practice this may allow many digital identifiers to map to one user and interoperability systems will be well designed to
+        handle that. This must be enforced on a system level rather than server level.
+      DESC
 
       run do
         pass
@@ -35,7 +46,8 @@ module IdentityMatching
       title 'Identifier SHALL be capable of a validation process'
       description <<~DESC
         Identifier capable of validation by one of following methods:
-            1. AAL2 or greater and originate from trusted provider
+            1. User authenticates themselves with credentials that originate from another trusted identity provider
+                a. The identity provider must achieve Identity Assurance Level 2 (IAL2) for the verification process to assert IAL1
             2. Confirm identifier and verify demographics - first, last, date of birth, home address including zip or city and state
             3. Authorize sharing of demographics with relying party and verify:
                 a. Identitifer matches medical record number
@@ -43,9 +55,8 @@ module IdentityMatching
       DESC
 
       run do
-        # TODO
         pass
-        info "This test is an automatic pass, but service provider must conform to specification above."
+        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
@@ -55,12 +66,11 @@ module IdentityMatching
       description ''
 
       run do
-        # TODO
+        warn "TODO"
         pass
-        info "This test is an automatic pass, but service provider must conform to specification above."
+        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
-
 
     test do
       id :differentiate_verified_unverified_attributes
@@ -68,9 +78,13 @@ module IdentityMatching
       description ''
 
       run do
-        # TODO
-        pass
-        info "This test is an automatic pass, but service provider must conform to specification above."
+        warn "TODO"
+        if strict() == "false" or strict() === false
+          omit
+        else
+          pass
+          info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
+        end
       end
     end
 
@@ -81,11 +95,12 @@ module IdentityMatching
       description ''
 
       run do
-        # TODO
+        warn "TODO"
         pass
-        info "This test is an automatic pass, but service provider must conform to specification above."
+        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
+
 
     test do
       id :unique_identifier_per_person
@@ -93,9 +108,9 @@ module IdentityMatching
       description ''
 
       run do
-        # TODO
+        warn "TODO"
         pass
-        info "This test is an automatic pass, but service provider must conform to specification above."
+        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
@@ -106,9 +121,9 @@ module IdentityMatching
       description ''
 
       run do
-        # TODO
+        warn "TODO"
         pass
-        info "This test is an automatic pass, but service provider must conform to specification above."
+        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
@@ -119,9 +134,9 @@ module IdentityMatching
       description ''
 
       run do
-        # TODO
+        warn "TODO"
         pass
-        info "This test is an automatic pass, but service provider must conform to specification above."
+        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
@@ -132,9 +147,9 @@ module IdentityMatching
       description ''
 
       run do
-        # TODO
-        pass
-        info "This test is an automatic pass, but service provider must conform to specification above."
+        warn "TODO"
+        # info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
+        pass "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
@@ -145,12 +160,11 @@ module IdentityMatching
       description ''
 
       run do
-        # TODO
+        warn "TODO"
         pass
-        info "This test is an automatic pass, but service provider must conform to specification above."
+        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
-
 
     test do
       id :exclusive_control
@@ -158,24 +172,30 @@ module IdentityMatching
       description ''
 
       run do
-        # TODO
+        warn "TODO"
         pass
-        info "This test is an automatic pass, but service provider must conform to specification above."
+        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
     test do
       id :fhir_ready_identifiers
       title "Identifiers SHOULD be FHIR-ready and can be associated with an OpenID credential capable of OAuth 2.0 authentication via UDAP Tiered OAuth"
-      description ''
+      description <<~DESC
+        Other FHIR implementation guides may also leverage the digital identifier specified in this implementation guide, so digital identifiers should be
+        designed with other possible interoperability use cases in mind. An immediate alternative implementation guide of concern is UDAP Security. A UUID
+        string with UTF-8 encoding will suffice. This must be enforced on a system level rather than server level.
+      DESC
 
       run do
-        # TODO
-        pass
-        info "This test is an automatic pass, but service provider must conform to specification above."
+        if strict() == 'false' or strict() === false
+          omit
+        else
+          pass
+          info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
+        end
       end
     end
-
 
     test do
       id :associated
@@ -183,48 +203,76 @@ module IdentityMatching
       description ''
 
       run do
-        # TODO
+        warn "TODO"
         pass
-        info "This test is an automatic pass, but service provider must conform to specification above."
+        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
-
 
     test do
       id :open_id
       title "Identifiers SHOULD appear in OpenID identity claims distinct from subject identifier"
-      description ''
+      description <<~DESC
+        Example OpenID identity claim utilizing a digital identifier:
+            {
+               ...
+               "iss":"https://generalhospital.example.com/as",
+               "sub":"328473298643",                                 # distinct JWT subject id
+               "identifier":"123e4567-e89b-12d3-a456-426614174000a", # the digital identifier
+               "amr":"http://udap.org/code/auth/aal2",
+               "acr":"http://udap.org/code/id/ial2",
+               "name": "Jane Doe",
+               "given_name": "Jane",
+               "family_name": "Doe",
+               "birthdate": "1979-01-01",
+               "address": {
+                 "street_address": "1234 Hollywood Blvd.",
+                 "locality": "Los Angeles",
+                 "region": "CA",
+                 "postal_code": "90210",
+                 "country": "US"},
+                "email": "janedoe@example.com",
+               "picture":"https://generalhospital.example.com/fhir/Patient?identifier=https://generalhospital.example.com/issuer1|123e4567-e89b-12d3-a456-426614174000a"
+            }
+      DESC
 
       run do
-        # TODO
-        pass
-        info "This test is an automatic pass, but service provider must conform to specification above."
+        if strict() == "false" or strict() === false
+          omit
+        else
+          # TODO: consider querying OPENID metadata, and if claim endpoint found test the claim, else skip test
+          info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
+          pass
+        end
       end
     end
 
 
     test do
       id :protected
-      title "identifier SHALL be protected like social security numbers"
-      description ''
+      title "Identifier SHALL be protected like Social Security Numbers"
+      description <<~DESC
+        Implementers should follow best privacy and security practices for digital identifiers, which may play a
+        significant role in healthcare. Treat them akin to Social Security Numbers.
+      DESC
 
       run do
-        # TODO
         pass
-        info "This test is an automatic pass, but service provider must conform to specification above."
+        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
 
     test do
       id :only_for_matching
-      title "Identifier SHALL NOT be used outside of patient matching purposes in a healthcare setting"
-      description ''
+      title "Identifier SHALL NOT be shared other than for patient matching purposes in a healthcare setting"
+      description <<~DESC
+        Identifier should follow best privacy practices and only use them when necessary.
+      DESC
 
       run do
-        # TODO
         pass
-        info "This test is an automatic pass, but service provider must conform to specification above."
+        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
@@ -232,12 +280,14 @@ module IdentityMatching
     test do
       id :not_open_id_connect_identifier
       title "Identifier SHALL NOT be the OpenID Connect Identifier"
-      description ''
+      description <<~DESC
+        In line with best privacy practices, digital identifiers are distinct from OpenID Connect Identifier.
+      DESC
 
       run do
-        # TODO
+        warn "TODO"
         pass
-        info "This test is an automatic pass, but service provider must conform to specification above."
+        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
@@ -245,12 +295,13 @@ module IdentityMatching
     test do
       id :not_derivable
       title "Identifier SHALL NOT be programmatically derivable or deduced from OpenID Connect Identifier"
-      description ''
+      description <<~DESC
+        In line with best security practices, digital identifiers cannot be derivable from other identifiers.
+      DESC
 
       run do
-        # TODO
         pass
-        info "This test is an automatic pass, but service provider must conform to specification above."
+        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
@@ -261,9 +312,9 @@ module IdentityMatching
       description ''
 
       run do
-        # TODO
+        warn "TODO"
         pass
-        info "This test is an automatic pass, but service provider must conform to specification above."
+        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
@@ -274,9 +325,9 @@ module IdentityMatching
       description ''
 
       run do
-        # TODO
+        warn "TODO"
         pass
-        info "This test is an automatic pass, but service provider must conform to specification above."
+        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
@@ -284,12 +335,16 @@ module IdentityMatching
     test do
       id :alignment_nist_800_63
       title "Identifier SHALL be in alignment with NIST 800-63-3 unless specified otherwise"
-      description ''
+      description <<~DESC
+        The National Institute of Science and Technology has published very thorough guidelines
+        on identity matching. Digital identifiers shall be compliant with their guidelines, and
+        they may offer better clarity on implementing a successful real-world identifier.
+        See: https://pages.nist.gov/800-63-3/
+      DESC
 
       run do
-        # TODO
         pass
-        info "This test is an automatic pass, but service provider must conform to specification above."
+        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
@@ -300,12 +355,29 @@ module IdentityMatching
       description ''
 
       run do
-        # TODO
+        warn "TODO"
         pass
-        info "This test is an automatic pass, but service provider must conform to specification above."
+        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
+    test do
+      id :avoid_l_o
+      title "Enterprise Identifiers SHOULD avoid the letters I and O as they are difficult to differentiate from 1 and 0."
+      description <<~DESC
+        For each Patient.identifier.type == "PRN" in GET /Patient assert that Patient.identifier.value does not have I or O.
+        Skips test if no Patient.identifier.type == "PRN" found.
+      DESC
+
+      run do
+        if strict() == 'false' or strict() === false
+          omit
+        else
+          warn "TODO"
+          pass
+        end
+      end
+    end
 
   end
 end
