@@ -120,12 +120,12 @@ module IdentityMatching
       id :cannot_reassign_identifier
       title "Identity provider system SHALL NOT reassign identifier to another individual except in the case of name change"
       description <<~DESC
-        TODO
+        Test
 	  DESC
 
       run do
         warn "TODO"
-        pass "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
+        #pass "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
@@ -148,7 +148,7 @@ module IdentityMatching
       id :use_legal_name
       title "Identity provider onboarding SHALL use full legal names"
       description <<~DESC
-        TODO
+        This must be enforced at the system level.
       DESC
 
       run do
@@ -212,7 +212,8 @@ module IdentityMatching
 
       run do
         warn "TODO"
-        pass "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
+        #pass "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
+        skip "Unimplemented" # run match with an identifier
       end
     end
 
@@ -222,7 +223,6 @@ module IdentityMatching
       description <<~DESC
         Example OpenID identity claim utilizing a digital identifier:
             {
-               ...
                "iss":"https://generalhospital.example.com/as",
                "sub":"328473298643",                                 # distinct JWT subject id
                "identifier":"123e4567-e89b-12d3-a456-426614174000a", # the digital identifier
@@ -303,7 +303,6 @@ module IdentityMatching
       DESC
 
       run do
-
         pass "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
@@ -381,7 +380,7 @@ module IdentityMatching
           omit
         else
           warn "TODO"
-          pass
+          skip "Unimplemented"
         end
       end
     end
