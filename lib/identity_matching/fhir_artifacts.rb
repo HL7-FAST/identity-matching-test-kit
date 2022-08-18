@@ -94,7 +94,7 @@ module IdentityMatching
         # TODO
         # could copy function from client or other branch...
 
-        raise StandardError, "Not Implemented"
+        skip "Not Implemented"
       end
     end
 

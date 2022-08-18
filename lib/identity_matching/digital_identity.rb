@@ -19,8 +19,7 @@ module IdentityMatching
       DESC
 
       run do
-        pass
-        info "This test is an automatic pass, see ABOUT."
+        pass "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
@@ -35,8 +34,7 @@ module IdentityMatching
       DESC
 
       run do
-        pass
-        info "This test is an automatic pass, see ABOUT."
+        pass "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
@@ -46,44 +44,45 @@ module IdentityMatching
       title 'Identifier SHALL be capable of a validation process'
       description <<~DESC
         Identifier capable of validation by one of following methods:
-            1. User authenticates themselves with credentials that originate from another trusted identity provider
-                a. The identity provider must achieve Identity Assurance Level 2 (IAL2) for the verification process to assert IAL1
-            2. Confirm identifier and verify demographics - first, last, date of birth, home address including zip or city and state
+            1. User authenticates themselves with credentials that originate from another trusted identity provider.
+                1a. The identity provider must achieve Identity Assurance Level 2 (IAL2) for the verification process to assert IAL1.
+            2. Confirm identifier and verify demographics - first, last, date of birth, home address including zip or city and state.
             3. Authorize sharing of demographics with relying party and verify:
-                a. Identitifer matches medical record number
-                b. Profile photo is visual match
+                3a. Identitifer matches medical record number.
+                3b. Profile photo is visual match.
       DESC
 
       run do
-        pass
-        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
+        pass "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
     test do
       id :identity_proofing
       title "Service SHALL perform identity proofing process for individual represented by identifier and include declaration of identity assertion"
-      description ''
+      description <<~DESC
+        TODO
+      DESC
 
       run do
         warn "TODO"
-        pass
-        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
+        pass "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
     test do
       id :differentiate_verified_unverified_attributes
       title "Identity proofing process SHOULD differentiate between verified and unverified identity attributes"
-      description ''
+      description <<~DESC
+        TODO
+      DESC
 
       run do
         warn "TODO"
         if strict() == "false" or strict() === false
           omit
         else
-          pass
-          info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
+          pass "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
         end
       end
     end
@@ -92,12 +91,13 @@ module IdentityMatching
     test do
       id :unique_identifier_per_time
       title "Identifier SHALL be unique for all time in assigner's system"
-      description ''
+      description <<~DESC
+        TODO
+      DESC
 
       run do
         warn "TODO"
-        pass
-        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
+        pass "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
@@ -105,12 +105,13 @@ module IdentityMatching
     test do
       id :unique_identifier_per_person
       title "Identifier SHALL correspond to a unique person on identity provider's system"
-      description ''
+      description <<~DESC
+        TODO
+      DESC
 
       run do
         warn "TODO"
-        pass
-        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
+        pass "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
@@ -118,12 +119,13 @@ module IdentityMatching
     test do
       id :cannot_reassign_identifier
       title "Identity provider system SHALL NOT reassign identifier to another individual except in the case of name change"
-      description ''
+      description <<~DESC
+        TODO
+	  DESC
 
       run do
         warn "TODO"
-        pass
-        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
+        pass "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
@@ -131,12 +133,13 @@ module IdentityMatching
     test do
       id :assert_identity_attributes
       title "Identity provider onboarding SHALL require individual to assert ownership of identity attributes"
-      description ''
+      description <<~DESC
+        TODO
+      DESC
 
       run do
         warn "TODO"
-        pass
-        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
+        pass "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
@@ -144,11 +147,12 @@ module IdentityMatching
     test do
       id :use_legal_name
       title "Identity provider onboarding SHALL use full legal names"
-      description ''
+      description <<~DESC
+        TODO
+      DESC
 
       run do
         warn "TODO"
-        # info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
         pass "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
@@ -157,24 +161,26 @@ module IdentityMatching
     test do
       id :discourage_work_numbers
       title "Identity provider onboarding SHOULD discourage use of work addresses or phone numbers to represent individual"
-      description ''
+      description <<~DESC
+        TODO
+      DESC
 
       run do
         warn "TODO"
-        pass
-        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
+        pass "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
     test do
       id :exclusive_control
       title "Phone numbers and email addresses SHALL be under the exclusive control of individual is used to secure identifier or credentials"
-      description ''
+      description <<~DESC
+        TODO
+      DESC
 
       run do
         warn "TODO"
-        pass
-        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
+        pass "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
@@ -191,8 +197,8 @@ module IdentityMatching
         if strict() == 'false' or strict() === false
           omit
         else
-          pass
-          info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
+
+          pass "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
         end
       end
     end
@@ -200,12 +206,13 @@ module IdentityMatching
     test do
       id :associated
       title "Identifier SHALL be associated with Patient.identifier resource element"
-      description ''
+      description <<~DESC
+          TODO
+      DESC
 
       run do
         warn "TODO"
-        pass
-        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
+        pass "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
@@ -241,8 +248,7 @@ module IdentityMatching
           omit
         else
           # TODO: consider querying OPENID metadata, and if claim endpoint found test the claim, else skip test
-          info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
-          pass
+          pass "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
         end
       end
     end
@@ -257,8 +263,7 @@ module IdentityMatching
       DESC
 
       run do
-        pass
-        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
+        pass "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
@@ -271,8 +276,7 @@ module IdentityMatching
       DESC
 
       run do
-        pass
-        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
+        pass "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
@@ -286,8 +290,7 @@ module IdentityMatching
 
       run do
         warn "TODO"
-        pass
-        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
+        pass "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
@@ -300,8 +303,8 @@ module IdentityMatching
       DESC
 
       run do
-        pass
-        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
+
+        pass "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
@@ -309,12 +312,13 @@ module IdentityMatching
     test do
       id :not_sharable_to_untrusted
       title "Identity provider system SHALL NOT allow individual to authorize sharing of identifier with an endpoint that is not a trusted healthcare organization"
-      description ''
+      description <<~DESC
+          TODO
+      DESC
 
       run do
         warn "TODO"
-        pass
-        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
+        pass "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
@@ -322,12 +326,13 @@ module IdentityMatching
     test do
       id :authentication_assurance
       title "If Identifier is IAL1 or higher, then identity provider system SHALL establish proof of control mechanism conforming to NIST AAL2 or higher authentication level"
-      description ''
+      description <<~DESC
+          TODO
+      DESC
 
       run do
         warn "TODO"
-        pass
-        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
+        pass "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
@@ -343,8 +348,7 @@ module IdentityMatching
       DESC
 
       run do
-        pass
-        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
+        pass "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
@@ -352,12 +356,13 @@ module IdentityMatching
     test do
       id :cannot_reassign_cross_organizational_identifiers
       title "Cross organiztional enterprise identifiers SHALL NOT be reassigned to different people at any point in time"
-      description ''
+      description <<~DESC
+          TODO
+      DESC
 
       run do
         warn "TODO"
-        pass
-        info "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
+        pass "This test is an automatic pass, but service provider must conform to specification above. See ABOUT."
       end
     end
 
@@ -368,6 +373,8 @@ module IdentityMatching
         For each Patient.identifier.type == "PRN" in GET /Patient assert that Patient.identifier.value does not have I or O.
         Skips test if no Patient.identifier.type == "PRN" found.
       DESC
+
+      # TODO: run test as described above, or omit for being out of scope?
 
       run do
         if strict() == 'false' or strict() === false
