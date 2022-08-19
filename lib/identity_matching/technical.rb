@@ -60,7 +60,7 @@ module IdentityMatching
     test do
       title 'Test Kit is in Strict mode'
       id :not_strict
-      description "This test shall execute ALL test cases if in strict mode, else it will omit SHOULD and MAY test cases."
+      description "This test kit shall execute ALL test cases if in strict mode, else it will omit SHOULD and MAY test cases."
 
       run do
         omit_if strict == 'false' or strict === false
