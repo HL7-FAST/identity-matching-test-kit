@@ -8,15 +8,15 @@ module IdentityMatching
 
     title 'Technical Requirements'
     description <<~DESC
-        For this test kit to work, the target server must be capable of Patient create and Patient get all,
-        which are expected to be implemented at endpoints `POST <base>/Patient`, `GET <base>/Patient`
+        For this test kit to work, the target server must be capable of Patient create and Patient get all
+        in JSON format, which are expected to be implemented at endpoints `POST <base>/Patient`, `GET <base>/Patient`
         respectively. The following tests confirm this functionality.
     DESC
     id :technical
 
     http_client do
         url :url                    # from test suite input
-        bearer_token :access_token
+        #bearer_token :access_token
         headers 'application' => 'Content-Type/application+fhir'
     end
 
@@ -41,10 +41,21 @@ module IdentityMatching
       description "Expects route GET <base>/Patient"
 
       run do
-        response = get('Patient', headrs: {'Content-Type' => 'application/fhir+json'})
-        patients_fhir = FHIR.from_contents(response.response_body)
-        assert patients_fhir, "Could not parse FHIR response"
+        response = get('Patient', headers: {'Accept' => 'application/fhir+json;application/json;text/json'})
         assert response.status == 200, "Expected HTTP 200 OK"
+
+        begin
+          JSON.parse(response.response_body)
+        rescue
+          fail("Excepted JSON response")
+        end
+
+        begin
+          patients_fhir = FHIR.from_contents(response.response_body)
+        rescue
+          fail("Could not parse FHIR response")
+        end
+        assert patients_fhir, "Could not parse FHIR response"
 
         # check response fhir syntax
         @errors = patients_fhir.validate
