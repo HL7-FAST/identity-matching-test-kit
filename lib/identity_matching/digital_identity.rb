@@ -179,7 +179,7 @@ module IdentityMatching
           if resource.resourceType == 'Patient' then
             assert resource.respond_to?(:name) && !resource.name.empty?, "No names found for patient #{resource.id}"
             legal_name = resource.name.index {|human_name| !human_name.respond_to?(:use) || human_name.use.nil? || (human_name.use == 'official') }
-            info "Failed because of Patient.name[#{legal_name}] where Patient.id == #{resource.id}" if !!legal_name
+            info "Failed because of Patient.name[#{legal_name}] where Patient.id == #{resource.id}" if !legal_name
             assert !!legal_name, "No full legal name found"
           end
         end
