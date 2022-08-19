@@ -17,7 +17,7 @@ module IdentityMatching
     http_client do
         url :url                    # from test suite input
         #bearer_token :access_token
-        headers 'application' => 'Content-Type/application+fhir'
+        headers 'Accept' => 'application/fhir+json;application/json;text/json'
     end
 
     test do
@@ -29,9 +29,8 @@ module IdentityMatching
         patient_json = load_resource('technical_create_patient.json')
         patient_fhir = FHIR.from_contents(patient_json)
 
-        response = post('/Patient', body: patient_fhir.to_json, headers: {'Content-Type' => 'application/fhir+json'})
+        response = post('Patient', body: patient_fhir.to_json, headers: {'Content-Type' => 'application/fhir+json'})
         assert (response.status > 199 && response.status < 300) or (response.status == 303)
-        pass
       end
     end
 
@@ -41,7 +40,7 @@ module IdentityMatching
       description "Expects route GET <base>/Patient"
 
       run do
-        response = get('Patient', headers: {'Accept' => 'application/fhir+json;application/json;text/json'})
+        response = get('Patient')
         assert response.status == 200, "Expected HTTP 200 OK"
 
         begin
