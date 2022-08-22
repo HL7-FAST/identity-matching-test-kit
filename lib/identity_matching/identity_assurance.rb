@@ -34,7 +34,7 @@ module IdentityMatching
         # TODO
         # should construct match requests with only partial information and test if server
         # rejects them
-        raise StandardError, "Not Implemented"
+        skip "Not Implemented"
       end
     end
 
@@ -61,7 +61,7 @@ module IdentityMatching
         @passed_verify_photo = true
         # send server match request with photo data and check that it doesn't crash
         # leave message saying photo verification must be done by the service provider (human)
-        raise StandardError, "Not Implemented"
+        skip "Not Implemented"
       end
     end
 
