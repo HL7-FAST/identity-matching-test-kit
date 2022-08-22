@@ -4,8 +4,11 @@ require "erb"
 require "net/http"
 require "webmock/rspec"
 require "logger"
+require 'fhir_models'
 require_relative "match_request"
 require_relative "helper"
+
+require "inferno/dsl/assertions.rb"
 
 module IdentityMatching
   class PatientMatching < Inferno::TestGroup
@@ -40,7 +43,7 @@ module IdentityMatching
       title 'Patient-initiated workflows SHALL require end-user authorization'
       description <<~DESC
         If a client or fullstack application allows any patient to make $match queries for themselves, then
-        they must have explicit authorization by the subject patient for that information (i.e: OAuth2).
+        they must have explicit authorization by the subject patient for that information (i.e: UDAP-tiered OAuth2).
       DESC
 
       run do
@@ -52,7 +55,11 @@ module IdentityMatching
     test do
       id :transmitting_identity
       title 'The transmitter of identity attributes with an asserted assurance level SHALL verify the attributes at that assurance level or be consistent with other evidence'
-      # TODO desc
+      description <<~DESC
+        NIST has established Identity Assurance Level 1 (IAL) and IAL 2, which each represent different confident levels of asserting an identity. The implementation guide proposes IAL1.2 - IAL1.8
+        to further assist patient matching. The identity verification process must assert an IAL and verify the attributes for that identity to be of the same confidence level
+        (i.e: checking a photo) OR verify the attributes to be consistent with other attributes for that identity and confidence level.
+      DESC
 
       run do
         info "This test is an automatic pass, please see ABOUT."
@@ -62,20 +69,134 @@ module IdentityMatching
 
     test do
       id :patient_match_base
-      title 'Patient match is valid'
-      description "Verify that the Patient $match resource returned from the server is a valid FHIR resource."
+      title 'Patient $match returns success code'
+      description <<~DESC
+        Verify that POST [base]/Patient/$match returns HTTP 200 OK
+      DESC
 
       makes_request :match_operation
 
       run do
-
           json_request = load_resource('test_queries/parameters1.json')
-          fhir_body = FHIR.from_contents(json_request) # needs to be FHIR::Parameters object
+          fhir_body = FHIR.from_contents(json_request)
 
           fhir_operation('Patient/$match', body: fhir_body, name: :match_operation);
 
           assert_response_status(200)
+      end
+    end
+
+    test do
+      id :patient_match_fhir
+      title 'Patient $match returns valid FHIR'
+      description "Verify that the Patient $match resource returned from the server is a valid FHIR resource."
+
+      # Use saved request/response from fhir_operation call in previous test
+      uses_request :match_operation
+
+      run do
+          json_request = load_resource('test_queries/parameters1.json')
+          fhir_body = FHIR.from_contents(json_request)
+
+          fhir_operation('Patient/$match', body: fhir_body, name: :match_operation);
+
           assert_valid_resource
+      end
+    end
+
+    test do
+      id :resource_is_bundle
+      title 'Server returns Bundle resource for Patient/$match operation'
+      description <<~DESC
+        Server return valid Bundle resource as successful result of $match operation
+        POST [base]/Patient/$match
+      DESC
+
+      uses_request :match_operation
+
+      run do
+        assert_resource_type( 'Bundle' )
+      end
+    end
+
+    test do
+      id :bundle_contains_patients
+      title 'Server returns Bundle resource containing valid Patient entry'
+      description %(
+        Server return valid Patient resource in the Bundle as first entry
+      )
+      uses_request :match_operation
+
+      run do
+        skip_if !resource.is_a?(FHIR::Bundle), 'No Bundle returned from match operation'
+
+        assert resource.entry.length.positive?, 'Bundle has no entries'
+
+        assert_valid_bundle_entries(resource_types: 'Patient')
+      end
+    end
+
+    test do
+      id :bundle_entries_contain_score
+      title 'Server scored $match results'
+      description %(
+        Server returns score with $match result, for example:
+        {
+            "entry": [
+                {
+                    "fullUrl": "Patient/2",
+                    "request": {
+                        "method": "POST",
+                        "url": "/baseR4/Patient/{}"
+                    },
+                    "resource": {
+                        "_birthDate": "1991-12-31T05:00:00.000Z",
+                        "active": true,
+                        "birthDate": "1991-12-31",
+                        "extension": [
+                            {
+                                "url": "https://build.fhir.org/ig/HL7/fhir-directory-attestation/match-quality",
+                                "valueDecimal": 0.65
+                            }
+                        ],
+                        "gender": "female",
+                        "id": "2",
+                        "meta": {
+                            "lastUpdated": "2022-08-22T19:57:25.450Z",
+                            "versionId": "1"
+                        },
+                        "name": [
+                            {
+                                "family": "Doe",
+                                "given": [
+                                    "Jane"
+                                ]
+                            }
+                        ],
+                        "resourceType": "Patient"
+                    },
+                    "response": {
+                        "status": "200"
+                    }
+                }
+            ],
+            "resourceType": "Bundle",
+            "total": 1,
+            "type": "searchset"
+        }
+      )
+
+      uses_request :match_operation
+
+      run do
+        skip_if !resource.is_a?(FHIR::Bundle), 'No Bundle returned from match operation'
+        skip_if !resource.entry.length.positive?, 'Bundle has no entries'
+
+        extensions = resource.dig("entry", 0, "resource", "extension");
+        assert extensions, "Bundle.entry[0].resource.extension does not exist"
+        assert extnesions.length.positive?, "Bundle.entry[0].resource.extension array is empty"
+
+        assert extensions.any? {|hash| hash['url'] == "https://build.fhir.org/ig/HL7/fhir-directory-attestation/match-quality" and !!hash['valueDecimal'] }, "No score found"
       end
     end
 
@@ -86,7 +207,6 @@ module IdentityMatching
         Match output SHOULD contain every record of every candidate identity, subject to volume limits
       )
 
-      # Use saved request/response from fhir_operation call in previous test
       uses_request :match_operation
 
       run do
@@ -98,9 +218,9 @@ module IdentityMatching
 
         skip "TODO: decide are we returning all records or certain matches?"
       end
-
     end
 
+=begin # TODO remove test?
     test do
       title 'Server returns a fully bundled patient records from a Patient resource'
       description %(
@@ -133,43 +253,7 @@ module IdentityMatching
         assert_resource_type(:bundle)
       end
     end
-
-    test do
-      title 'Server returns Bundle resource for Patient/$match operation'
-      description <<~DESC
-        Server return valid Bundle resource as successful result of $match operation
-        POST [base]/Patient/$match
-      DESC
-
-      uses_request :match_operation
-
-      run do
-        skip_if( !resource.is_a?(FHIR::Bundle), 'No Bundle returned from match operation' )
-
-        assert_valid_resource({ :profile_url => 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient' })
-        # TODO use bundle profile instead?
-      end
-    end
-
-    test do
-      title 'Server returns Bundle resource containing valid Patient entry'
-      description %(
-        Server return valid Patient resource in the Bundle as first entry
-      )
-      uses_request :match_operation
-
-      run do
-        skip_if !resource.is_a?(FHIR::Bundle), 'No Bundle returned from match operation'
-
-        assert resource.entry.length.positive?, 'Bundle has no entries'
-
-        entry = resource.entry.first
-
-        assert entry.resource.is_a?(FHIR::Patient), 'The first entry in the Bundle is not a Patient'
-        #assert_valid_resource({resource: entry, profile_url: 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient'})
-
-      end
-    end
+=end
 
     test do
       title 'Test whether it is possible to gain access to patient data without authenticating'
@@ -211,6 +295,7 @@ module IdentityMatching
       uses_request :match_operation
 
       run do
+        omit_if strict() == 'false' or strict() === false
 
         i =0
         curr_id=0
@@ -235,19 +320,20 @@ module IdentityMatching
             i= i + 1
           end
         end
+
         assert is_sorted == true, "Returned records are not sorted by patient id ( asc ) and score ( desc) "
       end
     end
 
     test do
-      title 'Determine whether or not  the patient.link field references an underlying patient'
+      title 'Determine whether or not the patient.link field references an underlying patient'
       description %(Determine whether or not the patient.link field references an underlying patient)
 
       uses_request :match_operation
 
       run do
-
-        response_json = resource.to_json # resource is body from response as FHIR::Model
+        # resource from fhir_operation('Patient/$match')
+        response_json = resource.to_json
 
         responseJSON = JSON.parse(response_json)
         responseJSON["entry"].each do |item|
@@ -262,6 +348,7 @@ module IdentityMatching
               patientID=patientURL.sub("Patient/","");
 
               fhir_read(:patient, patientID, client: :with_custom_headers)
+              # request, response, resource now overwritten by fhir_read
               assert_response_status(200)
 
             end
