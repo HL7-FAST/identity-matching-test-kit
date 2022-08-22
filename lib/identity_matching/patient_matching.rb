@@ -166,7 +166,8 @@ module IdentityMatching
         entry = resource.entry.first
 
         assert entry.resource.is_a?(FHIR::Patient), 'The first entry in the Bundle is not a Patient'
-        assert_valid_resource(resource: entry, profile_url: 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient')
+        #assert_valid_resource({resource: entry, profile_url: 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient'})
+
       end
     end
 
