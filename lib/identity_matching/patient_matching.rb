@@ -13,10 +13,12 @@ module IdentityMatching
     # import all functions defined in module Helper
     include IdentityMatching::Helper
 
+
     # test group metadata
     title 'Patient Matching Tests'
     description 'Execute a $match operation at /Patient/$match endpoint on a Master Patient Index (MPI). '
     id :patient_matching
+
 
     # filler functions to replace input (for now)
     def expectedResultCnt
@@ -30,6 +32,7 @@ module IdentityMatching
     def patient_id
       2
     end
+
 
     # test cases
     test do
@@ -67,9 +70,6 @@ module IdentityMatching
       run do
 
           json_request = load_resource('test_queries/parameters1.json')
-          #puts "======================="
-          #puts "DEBUG: #{json_request}"
-          #puts "======================="
           fhir_body = FHIR.from_contents(json_request) # needs to be FHIR::Parameters object
 
           fhir_operation('Patient/$match', body: fhir_body, name: :match_operation);
@@ -107,7 +107,7 @@ module IdentityMatching
         This test will perform the $match operation on the chosen patient resource with the persist option on.
         It will verify that all matched patients are in the patient bundle and that we are able to retrieve the bundle after it's generated.
       )
-      # link 'https://www.hl7.org/fhir/patient-operation-match.html'
+
       uses_request :match_operation
 
       run do
@@ -141,14 +141,13 @@ module IdentityMatching
         POST [base]/Patient/$match
       DESC
 
-      # link 'https://www.hl7.org/fhir/patient-operation-match.html'
       uses_request :match_operation
 
       run do
         skip_if( !resource.is_a?(FHIR::Bundle), 'No Bundle returned from match operation' )
 
         assert_valid_resource({ :profile_url => 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient' })
-        # use bundle profile instead?
+        # TODO use bundle profile instead?
       end
     end
 
@@ -157,7 +156,6 @@ module IdentityMatching
       description %(
         Server return valid Patient resource in the Bundle as first entry
       )
-      # link 'https://www.hl7.org/fhir/patient-operation-match.html'
       uses_request :match_operation
 
       run do
@@ -176,9 +174,6 @@ module IdentityMatching
       title 'Test whether it is possible to gain access to patient data without authenticating'
       description %(Test whether it is possible to gain access to patient data without authenticating -
       This Test attempts to make a $match api call  without providing the authentication credentials)
-      #input :access_token;
-      #input :search_json ,
-      #  type: 'textarea'
 
       run do
         body = JSON[search_json]
@@ -189,9 +184,6 @@ module IdentityMatching
     end
 
     test do
-      #input :expectedResultCnt
-      #input :response_json
-      #output :numberOfRecordsReturned
       title 'Patient match - determines whether or not the $match function returns every valid record'
       description %(Match output SHOULD contain every record of every candidate identity, subject to volume limits)
 
@@ -200,22 +192,18 @@ module IdentityMatching
       run do
         response_json = resource.to_json # resource is body from response as FHIR::Model
 
-        #puts response_json
         response = JSON[response_json]
         numberOfRecordsReturned = response['total']
         assert_valid_json(response_json, message = "Invalid JSON response received - expected: #{expectedResultCnt} - received: #{numberOfRecordsReturned}")
         puts "number of records returned in bundle ---- #{numberOfRecordsReturned} "
         puts "number of records expected in bundle ---- #{expectedResultCnt} "
         assert numberOfRecordsReturned.to_i() == expectedResultCnt.to_i(), "Incorrect Number of Records returned"
-        #output numberOfRecordsReturned: numberOfRecordsReturned
 
       end
 
     end
 
     test do
-      #input :expectedResultCnt
-      #input :response_json
       title 'Determine whether or not the records are sorted by ID and Score'
       description %(Match output SHOULD return records sorted by score)
 
@@ -230,7 +218,7 @@ module IdentityMatching
         prev_score=0
         is_sorted=true
 
-        response_json = resource.to_json # resource is body from response as FHIR::Model
+        response_json = resource.to_json
         responseJSON = JSON.parse(response_json)
 
 
@@ -246,13 +234,11 @@ module IdentityMatching
             i= i + 1
           end
         end
-        puts "@@@@@@@@@@@@@   Is Sorted=#{is_sorted}  @@@@@@@@@@"
         assert is_sorted == true, "Returned records are not sorted by patient id ( asc ) and score ( desc) "
       end
     end
 
     test do
-      #input :response_json
       title 'Determine whether or not  the patient.link field references an underlying patient'
       description %(Determine whether or not the patient.link field references an underlying patient)
 
@@ -264,14 +250,14 @@ module IdentityMatching
 
         responseJSON = JSON.parse(response_json)
         responseJSON["entry"].each do |item|
-          puts "got here"
+          #puts "got here"
           patientLinkList= item.dig("resource","link")
-          puts "****patient Link List=#{patientLinkList}"
+          #puts "****patient Link List=#{patientLinkList}"
           if !patientLinkList.nil?
             patientLinkList.each do |patient_link|
-              puts "patient_link=#{patient_link}"
+              #puts "patient_link=#{patient_link}"
               patientURL=patient_link("other","reference")
-              puts "PatientLink URL=#{patientURL}"
+              #puts "PatientLink URL=#{patientURL}"
               patientID=patientURL.sub("Patient/","");
 
               fhir_read(:patient, patientID, client: :with_custom_headers)
