@@ -95,11 +95,8 @@ module IdentityMatching
       uses_request :match_operation
 
       run do
-          json_request = load_resource('test_queries/parameters1.json')
-          fhir_body = FHIR.from_contents(json_request)
-
-          fhir_operation('Patient/$match', body: fhir_body, name: :match_operation);
-
+          assert_valid_json(request.response_body)
+          assert resource
           assert_valid_resource
       end
     end
@@ -123,8 +120,9 @@ module IdentityMatching
       id :bundle_contains_patients
       title 'Server returns Bundle resource containing valid Patient entry'
       description %(
-        Server return valid Patient resource in the Bundle as first entry
+        Server returns valid Patient resource in the Bundle as first entry
       )
+
       uses_request :match_operation
 
       run do
@@ -192,9 +190,10 @@ module IdentityMatching
         skip_if !resource.is_a?(FHIR::Bundle), 'No Bundle returned from match operation'
         skip_if !resource.entry.length.positive?, 'Bundle has no entries'
 
-        extensions = resource.dig("entry", 0, "resource", "extension");
+        extensions = resource.to_hash.dig("entry", 0, "resource", "extension")
+
         assert extensions, "Bundle.entry[0].resource.extension does not exist"
-        assert extnesions.length.positive?, "Bundle.entry[0].resource.extension array is empty"
+        assert extensions.length.positive?, "Bundle.entry[0].resource.extension array is empty"
 
         assert extensions.any? {|hash| hash['url'] == "https://build.fhir.org/ig/HL7/fhir-directory-attestation/match-quality" and !!hash['valueDecimal'] }, "No score found"
       end
@@ -212,7 +211,7 @@ module IdentityMatching
       run do
         response_json = resource.to_json # resource is body from response as FHIR::Model
 
-        puts response_json
+        #puts response_json
         response = JSON.parse(response_json)
         puts("Entry Count = ", response[:total])
 
