@@ -8,16 +8,16 @@ module IdentityMatching
 
     title 'Technical Requirements'
     description <<~DESC
-        For this test kit to work, the target server must be capable of Patient create and Patient get all,
-        which are expected to be implemented at endpoints `POST <base>/Patient`, `GET <base>/Patient`
+        For this test kit to work, the target server must be capable of Patient create and Patient get all
+        in JSON format, which are expected to be implemented at endpoints `POST <base>/Patient`, `GET <base>/Patient`
         respectively. The following tests confirm this functionality.
     DESC
     id :technical
 
     http_client do
         url :url                    # from test suite input
-        bearer_token :access_token
-        headers 'application' => 'Content-Type/application+fhir'
+        #bearer_token :access_token
+        headers 'Accept' => 'application/fhir+json;application/json;text/json'
     end
 
     test do
@@ -29,9 +29,8 @@ module IdentityMatching
         patient_json = load_resource('technical_create_patient.json')
         patient_fhir = FHIR.from_contents(patient_json)
 
-        response = post('/Patient', body: patient_fhir.to_json, headers: {'Content-Type' => 'application/fhir+json'})
+        response = post('Patient', body: patient_fhir.to_json, headers: {'Content-Type' => 'application/fhir+json'})
         assert (response.status > 199 && response.status < 300) or (response.status == 303)
-        pass
       end
     end
 
@@ -41,10 +40,21 @@ module IdentityMatching
       description "Expects route GET <base>/Patient"
 
       run do
-        response = get('Patient', headrs: {'Content-Type' => 'application/fhir+json'})
-        patients_fhir = FHIR.from_contents(response.response_body)
-        assert patients_fhir, "Could not parse FHIR response"
+        response = get('Patient')
         assert response.status == 200, "Expected HTTP 200 OK"
+
+        begin
+          JSON.parse(response.response_body)
+        rescue
+          fail("Excepted JSON response")
+        end
+
+        begin
+          patients_fhir = FHIR.from_contents(response.response_body)
+        rescue
+          fail("Could not parse FHIR response")
+        end
+        assert patients_fhir, "Could not parse FHIR response"
 
         # check response fhir syntax
         @errors = patients_fhir.validate
@@ -60,7 +70,7 @@ module IdentityMatching
     test do
       title 'Test Kit is in Strict mode'
       id :not_strict
-      description "This test shall execute ALL test cases if in strict mode, else it will omit SHOULD and MAY test cases."
+      description "This test kit shall execute ALL test cases if in strict mode, else it will omit SHOULD and MAY test cases."
 
       run do
         omit_if strict == 'false' or strict === false

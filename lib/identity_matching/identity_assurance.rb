@@ -34,21 +34,21 @@ module IdentityMatching
         # TODO
         # should construct match requests with only partial information and test if server
         # rejects them
-        raise StandardError, "Not Implemented"
+        skip "Not Implemented"
       end
     end
 
     test do
       id :verify_email
       title "Server SHOULD verify email at every level of assurance"
+      description <<~DESC
+        Server should implement verification emails, which has good support in many popular authentication frameworks such as Devise for Ruby. Unfortunately,
+        deploying a full email stack with dkim security and mock mail user agent is beyond the means of this humble test kit.
+      DESC
 
       run do
-        omit_if !strict
-
-        # TODO
-        # this isn't testable without running your own email server,
-        # maybe just leave a description and automatically pass
-        raise StandardError, "Not Implemented"
+        omit_if strict() == 'false' or strict() === false
+        pass "This test is an automatic pass since it is out of scope for this test kit. See ABOUT. "
       end
     end
 
@@ -61,7 +61,7 @@ module IdentityMatching
         @passed_verify_photo = true
         # send server match request with photo data and check that it doesn't crash
         # leave message saying photo verification must be done by the service provider (human)
-        raise StandardError, "Not Implemented"
+        skip "Not Implemented"
       end
     end
 
@@ -77,11 +77,11 @@ module IdentityMatching
       DESC
 
       run do
-        if strict
+        if strict() == 'true' or strict() === true
           info "This test is an automatic pass, please read ABOUT."
           pass
         else
-          fail_if !@passed_verify_photo
+          skip_if !@passed_verify_photo
           info "You MAY do knowledge based verification of photo if one is provided."
           info "Please read ABOUT."
           pass
