@@ -1,0 +1,28 @@
+{
+  "resourceType": "Parameters",
+  "id": "simple_match_base",
+  "parameter": [
+    {
+      "name": "resource",
+      "resource": {
+        "resourceType": "Patient",
+        "meta": {
+          "profile": [
+            "http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient"
+          ]
+        },
+        "name": [
+          {
+            "given": ["Jane"]
+          }
+        ],
+        "gender": "female",
+        "birthDate": "1991-12-31"
+      }
+    },
+    {
+      "name": "onlyCertainMatches",
+      "valueBoolean": "false"
+    }
+  ]
+}

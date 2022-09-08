@@ -5,7 +5,9 @@ require "net/http"
 require "webmock/rspec"
 require "logger"
 require_relative "match_request"
+require_relative "match_request_json"
 require_relative "helper"
+require 'active_support/core_ext/string'
 
 module IdentityMatching
   class PatientMatching < Inferno::TestGroup
@@ -63,120 +65,6 @@ module IdentityMatching
     end
 
     test do
-      id :patient_match_base
-      title 'Patient match is valid'
-      description "Verify that the Patient $match resource returned from the server is a valid FHIR resource."
-
-      makes_request :match_operation
-
-      run do
-
-          json_request = load_resource('test_queries/parameters1.json')
-          puts "======================="
-          puts "DEBUG: #{json_request}"
-          puts "======================="
-
-          fhir_operation('Patient/$match', body: json_request, name: :match_operation);
-
-          assert_response_status(200)
-          assert_valid_resource
-      end
-    end
-
-    test do
-      id :every_valid_record
-      title 'Patient match - determines whether or not the $match function returns every valid record'
-      description %Q(
-        Match output SHOULD contain every record of every candidate identity, subject to volume limits
-      )
-
-      # Use saved request/response from fhir_operation call in previous test
-      uses_request :match_operation
-
-      run do
-        response_json = resource.to_json # resource is body from response as FHIR::Model
-
-        puts response_json
-        response = JSON.parse(response_json)
-        puts("Entry Count=" + response[:total])
-
-        raise StandardError, "TODO: complete"
-      end
-
-    end
-
-    test do
-      title 'Server returns a fully bundled patient records from a Patient resource'
-      description %(
-        This test will perform the $match operation on the chosen patient resource with the persist option on.
-        It will verify that all matched patients are in the patient bundle and that we are able to retrieve the bundle after it's generated.
-      )
-      # link 'https://www.hl7.org/fhir/patient-operation-match.html'
-      uses_request :match_operation
-
-      run do
-        fhir_read(:patient, patient_id)
-
-        assert_response_status(200)
-        assert_resource_type(:patient)
-        assert resource.id == patient.id, "Requested resource with id #{patient.id}, received resource with id #{resource.id}"
-
-        assert_valid_resource(profile_url: 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient')
-
-        patient_out = resource
-        matched_patients = []
-        patient_out.each_element do |value, meta, _path|
-          next if meta['type'] != 'searchset'
-          next if value.reference.blank?
-
-          matched_patients << value
-        end
-
-        fhir_operation("Patient/#{patient_out.id}/$match?persist=true", name: :match_operation)
-        assert_response_status(200)
-        assert_resource_type(:bundle)
-      end
-    end
-
-    test do
-      title 'Server returns Bundle resource for Patient/$match operation'
-      description <<~DESC
-        Server return valid Bundle resource as successful result of $match operation
-        POST [base]/Patient/$match
-      DESC
-
-      # link 'https://www.hl7.org/fhir/patient-operation-match.html'
-      uses_request :match_operation
-
-      run do
-        skip_if( !resource.is_a?(FHIR::Bundle), 'No Bundle returned from match operation' )
-
-        assert_valid_resource({ :profile_url => 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient'})
-        skip
-      end
-    end
-
-    test do
-      title 'Server returns Bundle resource containing valid Patient entry'
-      description %(
-        Server return valid Patient resource in the Bundle as first entry
-      )
-      # link 'https://www.hl7.org/fhir/patient-operation-match.html'
-      uses_request :match_operation
-
-      run do
-        skip_if !resource.is_a?(FHIR::Bundle), 'No Bundle returned from match operation'
-
-        assert resource.entry.length.positive?, 'Bundle has no entries'
-
-        entry = resource.entry.first
-
-        assert entry.resource.is_a?(FHIR::Patient), 'The first entry in the Bundle is not a Patient'
-        assert_valid_resource(resource: entry, profile_url: 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient')
-      end
-    end
-
-    test do
       title 'Test whether it is possible to gain access to patient data without authenticating'
       description %(Test whether it is possible to gain access to patient data without authenticating -
       This Test attempts to make a $match api call  without providing the authentication credentials)
@@ -193,125 +81,1042 @@ module IdentityMatching
     end
 
     test do
-      title 'Patient match is valid'
-      description %(
-      Verify that the Patient  $match resource returned from the server is a valid FHIR resource.
-      )
+      id :patient_match_base
+      title 'Patient match is valid for simple searches'
+      description "Verify that the Patient $match resource returned from the server is a valid FHIR resource."
 
-      #input 	:search_json ,
-      #      type: 'textarea'
-      #output 	:custom_headers
-      #output 	:response_json
-
-      # Named requests can be used by other tests
-      makes_request :match
-
+      makes_request :match_operation
 
       run do
-        body = JSON[search_json]
-        fhir_operation("Patient/$match", body: body, client: :with_custom_headers, name: :match, headers: { 'Content-Type'=>'application/fhir+json' })
+        json_request = load_resource('test_queries/simple_match_base.json')
+        puts "======================="
+        puts "DEBUG: #{json_request}"
+        puts "======================="
+        fhir_parameter = FHIR.from_contents(json_request)
 
-        responseBody= response[:body]
+        fhir_operation('Patient/$match', body: fhir_parameter, name: :match_operation)
 
-        #output response_json: response[:body]
         assert_response_status(200)
-        assert_valid_bundle_entries(resource_types: 'Patient')
 
+        assert_resource_type(:bundle)
+
+        #assert_valid_bundle_entries(resource_types: 'Patient')
       end
     end
 
     test do
-      #input :expectedResultCnt
-      #input :response_json
-      #output :numberOfRecordsReturned
-      title 'Patient match - determines whether or not the $match function returns every valid record'
-      description %(Match output SHOULD contain every record of every candidate identity, subject to volume limits
+      id :patient_match_no_profile
+      title 'Patient match parameters with no profile'
+      description "Verify that the Patient $match returns no data when the profile is missing"
+
+      run do
+          json_request = load_resource('test_queries/patient_match_no_profile.json')
+          puts "======================="
+          puts "DEBUG: #{json_request}"
+          puts "======================="
+          fhir_parameter = FHIR.from_contents(json_request)
+
+          fhir_operation('Patient/$match', body: fhir_parameter)
+
+          response_status = request.status
+
+          assert(response_status != 200, "FHIR endpoint returns results when the profile is not specified")
+      end
+    end
+
+    test do
+      id :patient_match_invalid_profile
+      title 'Patient match parameters with invalid profile'
+      description "Verify that the Patient $match returns no data when the profile is invalid"
+
+      run do
+          json_request = load_resource('test_queries/patient_match_no_profile.json')
+          puts "======================="
+          puts "DEBUG: #{json_request}"
+          puts "======================="
+          fhir_parameter = FHIR.from_contents(json_request)
+
+          fhir_operation('Patient/$match', body: fhir_parameter)
+
+          response_status = request.status
+
+          assert(response_status != 200, "FHIR endpoint returns results although the profile specified is not valid")
+      end
+    end
+
+    test do
+      id :patient_match_certain_matches_no_first_name
+      title 'Server returns no response when certain matches enabled with no first name'
+      description "Verify that the Patient $match returns no data when certainMatches is true and first name is missing"
+
+      run do
+          json_request = load_resource('test_queries/patient_match_certain_matches_no_first_name.json')
+          puts "======================="
+          puts "DEBUG: #{json_request}"
+          puts "======================="
+          fhir_parameter = FHIR.from_contents(json_request)
+
+          fhir_operation('Patient/$match', body: fhir_parameter)
+
+          response_status = request.status
+
+          assert(response_status != 200, "FHIR endpoint returns results although certainMatches is true and first name is missing")
+      end
+    end
+
+    test do
+      id :patient_match_certain_matches_false_no_first_name
+      title 'Server returns matched patients when certain matches disabled with no first name'
+      description "Verify that the Patient $match returns data when certainMatches is false and first name is missing"
+
+      run do
+          json_request = load_resource('test_queries/patient_match_certain_matches_false_no_first_name.json')
+          puts "======================="
+          puts "DEBUG: #{json_request}"
+          puts "======================="
+          fhir_parameter = FHIR.from_contents(json_request)
+
+          fhir_operation('Patient/$match', body: fhir_parameter)
+
+          assert_response_status(200)
+      end
+    end
+
+    test do
+      id :patient_match_certain_matches_no_last_name
+      title 'Server returns no response when certain matches enabled with no last name'
+      description "Verify that the Patient $match returns no data when certainMatches is true and last name is missing"
+
+      run do
+          json_request = load_resource('test_queries/patient_match_certain_matches_no_last_name.json')
+          puts "======================="
+          puts "DEBUG: #{json_request}"
+          puts "======================="
+          fhir_parameter = FHIR.from_contents(json_request)
+
+          fhir_operation('Patient/$match', body: fhir_parameter)
+
+          response_status = request.status
+
+          assert(response_status != 200, "FHIR endpoint returns results although certainMatches is true and last name is missing")
+      end
+    end
+
+    test do
+      id :patient_match_certain_matches_false_no_last_name
+      title 'Server returns matched patients when certain matches disabled with no last name'
+      description "Verify that the Patient $match returns data when certainMatches is false and last name is missing"
+
+      run do
+          json_request = load_resource('test_queries/patient_match_certain_matches_false_no_last_name.json')
+          puts "======================="
+          puts "DEBUG: #{json_request}"
+          puts "======================="
+          fhir_parameter = FHIR.from_contents(json_request)
+
+          fhir_operation('Patient/$match', body: fhir_parameter)
+
+          assert_response_status(200)
+      end
+    end
+
+    test do
+      id :patient_match_return_count_2
+      title 'Servers returns count of records specified'
+      description "Verify that the Patient $match returns only 2 records when 'count' parameter set to 2"
+
+      run do
+          json_request = load_resource('test_queries/patient_match_count_parameter.json')
+          puts "======================="
+          puts "DEBUG: #{json_request}"
+          puts "======================="
+          fhir_parameter = FHIR.from_contents(json_request)
+
+          fhir_operation('Patient/$match', body: fhir_parameter)
+
+          records_returned = resource.total
+
+          assert_response_status(200)
+          assert(records_returned <= 2, "Patient $match returns more records (#{records_returned}) than specified (2)")
+      end
+    end
+=begin
+    aFullName = nil
+    aSex = nil
+    aEmail = nil
+    aState = nil
+    aPostalCode = nil
+    aDriversLicenseNumber = nil
+    aStateID = nil
+    aMasterPatientIndex = nil
+    aMedicalRecordNumber = nil
+    aInsuranceMemberNumber = nil
+    aInsuranceSubscriberNumber = nil
+    aSocialSecurity = nil
+    aCertainMatchesOnly = 'no'
+    aMiddleName = nil
+
+    #Input profile Base validation    
+    aProfileLevel = 'Base'
+
+    #1. Input parameters not sufficient to return data
+    aPositiveTest = false
+
+    parameters = []
+    parameters << {test_description: 'last name', bLastName: true, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: false}
+    parameters << {test_description: 'first name', bLastName: false, bFirstName: true, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: false}
+    parameters << {test_description: 'date of birth', bLastName: false, bFirstName: false, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: false}
+    parameters << {test_description: 'identifier', bLastName: false, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: true, bDL: false, bEmail: false}
+    parameters << {test_description: 'telecom', bLastName: false, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: true, bAddress: false, bPPN: false, bDL: false, bEmail: false}
+    parameters << {test_description: 'address', bLastName: false, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: true, bPPN: false, bDL: false, bEmail: false}
+
+    #generate_match_input_tests( parameters, aProfileLevel, aPositiveTest)
+
+    #Create tests for base profile with minimum parameter specified that should return results
+    parameters.each do |parameter|
+      test do
+        test_description = parameter[:test_description].to_s
+        bLastName = parameter[:bLastName]
+        bFirstName = parameter[:bFirstName]
+        bDOB = parameter[:bDOB]
+        bIdentifier = parameter[:bIdentifier]
+        bTelecom = parameter[:bTelecom]
+        bAddress = parameter[:bAddress]
+        bPPN = parameter[:bPPN]
+        bDL = parameter[:bDL]
+        bEmail = parameter[:bEmail]
+
+        if aPositiveTest
+          aTestID = "minimum"
+          aTitle = ""
+          aDescription = ""
+        else
+          aTestID = "insufficient"
+          aTitle = "NOT"
+          aDescription = "no"
+        end
+
+        test_id = ("patient_match_" + aProfileLevel + "_profile_" + aTestID + "_parameters_" + test_description.parameterize.underscore).to_sym
+        id test_id
+        title "Patient $match for profile IDI Patient " + aProfileLevel + " with " + test_description + " SHOULD " + aTitle + " return data"
+        description "Verify that the Patient $match returns " + aDescription + " data for profile IDI Patient " + aProfileLevel + " with " + test_description
+
+        run do
+          aDOB = bDOB ? '1991-12-31' : nil
+          aPhone = bTelecom ? '555-555-5555' : nil
+          aStreetAddress = bAddress ? '135 Dolly Madison Pkwy' : nil
+          aCity = bAddress ? 'McLean' : nil
+          aMedicalRecordNumber = bIdentifier ? 'MS12121212' : nil
+          aLastName = bLastName ? 'Doe' : nil
+          aFirstName = bFirstName ? 'Jane' : nil
+          aPassportNumber = bPPN ? 'US53535353' : nil
+          aDriversLicenseNumber = bDL ? '999199912' : nil
+          aEmail = bEmail ? 'jane_doe@email.com' : nil
+      
+          baseMatchRequest = MatchRequest.new(aFullName, aDOB, aSex, aPhone, aEmail, aStreetAddress, aCity, aState, aPostalCode, aPassportNumber,
+            aDriversLicenseNumber, aStateID, aMasterPatientIndex, aMedicalRecordNumber, aInsuranceMemberNumber, aInsuranceSubscriberNumber, aSocialSecurity, 
+            aProfileLevel, aCertainMatchesOnly, aLastName, aFirstName, aMiddleName)
+
+
+          json_request = baseMatchRequest.build_request_fhir
+          puts "======================="
+          puts "DEBUG: #{json_request}"
+          puts "======================="
+          fhir_parameter = FHIR.from_contents(json_request)
+
+          fhir_operation('Patient/$match', body: fhir_parameter)
+
+          if aPositiveTest
+            assert_response_status(200)
+
+            assert_resource_type(:bundle)
+          else
+            response_status = request.status
+
+            assert(response_status != 200, "FHIR endpoint returns results for profile IDI Patient " + aProfileLevel + 
+              " when input parameters are insuffiencient to not satisfy minimum requirements")
+          end
+        end
+      end
+    end
+
+
+    parameters.clear
+    parameters << {test_description: 'full name', bLastName: true, bFirstName: true, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: false}
+    parameters << {test_description: 'last name and date of birth', bLastName: true, bFirstName: false, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: false}
+    parameters << {test_description: 'last name and identifier', bLastName: true, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: true, bDL: false, bEmail: false}
+    parameters << {test_description: 'last name and phone number', bLastName: true, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: true, bAddress: false, bPPN: false, bDL: false, bEmail: false}
+    parameters << {test_description: 'last name and address', bLastName: true, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: true, bPPN: false, bDL: false, bEmail: false}
+    parameters << {test_description: 'first name and date of birth', bLastName: false, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: false}
+    parameters << {test_description: 'first name and identifier', bLastName: false, bFirstName: true, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: true, bDL: false, bEmail: false}
+    parameters << {test_description: 'first name and phone number', bLastName: false, bFirstName: true, bDOB: false, bIdentifier: false, bTelecom: true, bAddress: false, bPPN: false, bDL: false, bEmail: false}
+    parameters << {test_description: 'first name and address', bLastName: false, bFirstName: true, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: true, bPPN: false, bDL: false, bEmail: false}
+
+    #2. Input parameters minimum required to return data
+    aPositiveTest = true
+
+    #generate_match_input_tests parameters, aProfileLevel, aPositiveTest
+    #Create tests for base profile with minimum parameter specified that should return results
+    parameters.each do |parameter|
+      test do
+        test_description = parameter[:test_description].to_s
+        bLastName = parameter[:bLastName]
+        bFirstName = parameter[:bFirstName]
+        bDOB = parameter[:bDOB]
+        bIdentifier = parameter[:bIdentifier]
+        bTelecom = parameter[:bTelecom]
+        bAddress = parameter[:bAddress]
+        bPPN = parameter[:bPPN]
+        bDL = parameter[:bDL]
+        bEmail = parameter[:bEmail]
+
+        if aPositiveTest
+          aTestID = "minimum"
+          aTitle = ""
+          aDescription = ""
+        else
+          aTestID = "insufficient"
+          aTitle = "NOT"
+          aDescription = "no"
+        end
+
+        #test_id = ("patient_match_" + aProfileLevel + "_profile_" + aTestID + "_parameters_" + test_description.parameterize.underscore).to_sym
+        #id test_id
+        title "Patient $match for profile IDI Patient " + aProfileLevel + " with " + test_description + " SHOULD " + aTitle + " return data"
+        description "Verify that the Patient $match returns " + aDescription + " data for profile IDI Patient " + aProfileLevel + " with " + test_description
+
+        run do
+          aDOB = bDOB ? '1991-12-31' : nil
+          aPhone = bTelecom ? '555-555-5555' : nil
+          aStreetAddress = bAddress ? '135 Dolly Madison Pkwy' : nil
+          aCity = bAddress ? 'McLean' : nil
+          aMedicalRecordNumber = bIdentifier ? 'MS12121212' : nil
+          aLastName = bLastName ? 'Doe' : nil
+          aFirstName = bFirstName ? 'Jane' : nil
+          aPassportNumber = bPPN ? 'US53535353' : nil
+          aDriversLicenseNumber = bDL ? '999199912' : nil
+          aEmail = bEmail ? 'jane_doe@email.com' : nil
+      
+          baseMatchRequest = MatchRequest.new(aFullName, aDOB, aSex, aPhone, aEmail, aStreetAddress, aCity, aState, aPostalCode, aPassportNumber,
+            aDriversLicenseNumber, aStateID, aMasterPatientIndex, aMedicalRecordNumber, aInsuranceMemberNumber, aInsuranceSubscriberNumber, aSocialSecurity, 
+            aProfileLevel, aCertainMatchesOnly, aLastName, aFirstName, aMiddleName)
+
+          json_request = baseMatchRequest.build_request_fhir
+          fhir_parameter = FHIR.from_contents(json_request)
+
+          fhir_operation('Patient/$match', body: fhir_parameter)
+
+          if aPositiveTest
+            assert_response_status(200)
+
+            assert_resource_type(:bundle)
+          else
+            response_status = request.status
+
+            assert(response_status != 200, "FHIR endpoint returns results for profile IDI Patient " + aProfileLevel + 
+              " when input parameters are insuffiencient to not satisfy minimum requirements")
+          end
+        end
+      end
+    end
+
+    #Input profile L0 validation    
+    aProfileLevel = 'L0'
+
+    #1. Input parameters not sufficient to return data
+    aPositiveTest = false
+
+    parameters.clear
+    parameters << {test_description: 'last name and identifier', bLastName: true, bFirstName: false, bDOB: false, bIdentifier: true, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: false}
+    parameters << {test_description: 'first name and identifier', bLastName: false, bFirstName: true, bDOB: false, bIdentifier: true, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: false}
+    parameters << {test_description: 'full name and identifier', bLastName: true, bFirstName: true, bDOB: false, bIdentifier: true, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: false}
+    parameters << {test_description: 'full name and phone number', bLastName: true, bFirstName: true, bDOB: false, bIdentifier: false, bTelecom: true, bAddress: false, bPPN: false, bDL: false, bEmail: false}
+    parameters << {test_description: 'full name and email', bLastName: true, bFirstName: true, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: true}
+    parameters << {test_description: 'full name and address', bLastName: true, bFirstName: true, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: true, bPPN: false, bDL: false, bEmail: false}
+    parameters << {test_description: 'full name and date of birth', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: false}
+       
+    #generate_match_input_tests( parameters, aProfileLevel, aPositiveTest )
+    #Create tests for base profile with minimum parameter specified that should return results
+    parameters.each do |parameter|
+      test do
+        test_description = parameter[:test_description].to_s
+        bLastName = parameter[:bLastName]
+        bFirstName = parameter[:bFirstName]
+        bDOB = parameter[:bDOB]
+        bIdentifier = parameter[:bIdentifier]
+        bTelecom = parameter[:bTelecom]
+        bAddress = parameter[:bAddress]
+        bPPN = parameter[:bPPN]
+        bDL = parameter[:bDL]
+        bEmail = parameter[:bEmail]
+
+        if aPositiveTest
+          aTestID = "minimum"
+          aTitle = ""
+          aDescription = ""
+        else
+          aTestID = "insufficient"
+          aTitle = "NOT"
+          aDescription = "no"
+        end
+
+        #test_id = ("patient_match_" + aProfileLevel + "_profile_" + aTestID + "_parameters_" + test_description.parameterize.underscore).to_sym
+        #id test_id
+        title "Patient $match for profile IDI Patient " + aProfileLevel + " with " + test_description + " SHOULD " + aTitle + " return data"
+        description "Verify that the Patient $match returns " + aDescription + " data for profile IDI Patient " + aProfileLevel + " with " + test_description
+
+        run do
+          aDOB = bDOB ? '1991-12-31' : nil
+          aPhone = bTelecom ? '555-555-5555' : nil
+          aStreetAddress = bAddress ? '135 Dolly Madison Pkwy' : nil
+          aCity = bAddress ? 'McLean' : nil
+          aMedicalRecordNumber = bIdentifier ? 'MS12121212' : nil
+          aLastName = bLastName ? 'Doe' : nil
+          aFirstName = bFirstName ? 'Jane' : nil
+          aPassportNumber = bPPN ? 'US53535353' : nil
+          aDriversLicenseNumber = bDL ? '999199912' : nil
+          aEmail = bEmail ? 'jane_doe@email.com' : nil
+      
+          baseMatchRequest = MatchRequest.new(aFullName, aDOB, aSex, aPhone, aEmail, aStreetAddress, aCity, aState, aPostalCode, aPassportNumber,
+            aDriversLicenseNumber, aStateID, aMasterPatientIndex, aMedicalRecordNumber, aInsuranceMemberNumber, aInsuranceSubscriberNumber, aSocialSecurity, 
+            aProfileLevel, aCertainMatchesOnly, aLastName, aFirstName, aMiddleName)
+
+          json_request = baseMatchRequest.build_request_fhir
+          fhir_parameter = FHIR.from_contents(json_request)
+
+          fhir_operation('Patient/$match', body: fhir_parameter)
+
+          if aPositiveTest
+            assert_response_status(200)
+
+            assert_resource_type(:bundle)
+          else
+            response_status = request.status
+
+            assert(response_status != 200, "FHIR endpoint returns results for profile IDI Patient " + aProfileLevel + 
+              " when input parameters are insuffiencient to not satisfy minimum requirements")
+          end
+        end
+      end
+    end
+
+    #2. Input parameters minimum required to return data
+    aPositiveTest = true
+    
+    parameters.clear
+    parameters << {test_description: 'last name and passport number', bLastName: true, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: true, bDL: false, bEmail: false}
+    parameters << {test_description: 'first name and passport number', bLastName: false, bFirstName: true, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: true, bDL: false, bEmail: false}
+    parameters << {test_description: 'last name and drivers license', bLastName: true, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: true, bEmail: false}
+    parameters << {test_description: 'first name and drivers license', bLastName: false, bFirstName: true, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: true, bEmail: false}
+    parameters << {test_description: 'full name and date of birth and identifier', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: true, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: false}
+    parameters << {test_description: 'full name and date of birth and phone number', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: true, bAddress: false, bPPN: false, bDL: false, bEmail: false}
+    parameters << {test_description: 'full name and date of birth and email', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: true}
+    parameters << {test_description: 'full name and date of birth and address', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: true, bPPN: false, bDL: false, bEmail: false}
+       
+    #generate_match_input_tests(parameters, aProfileLevel, aPositiveTest)
+    #Create tests for base profile with minimum parameter specified that should return results
+    parameters.each do |parameter|
+      test do
+        test_description = parameter[:test_description].to_s
+        bLastName = parameter[:bLastName]
+        bFirstName = parameter[:bFirstName]
+        bDOB = parameter[:bDOB]
+        bIdentifier = parameter[:bIdentifier]
+        bTelecom = parameter[:bTelecom]
+        bAddress = parameter[:bAddress]
+        bPPN = parameter[:bPPN]
+        bDL = parameter[:bDL]
+        bEmail = parameter[:bEmail]
+
+        if aPositiveTest
+          aTestID = "minimum"
+          aTitle = ""
+          aDescription = ""
+        else
+          aTestID = "insufficient"
+          aTitle = "NOT"
+          aDescription = "no"
+        end
+
+        #test_id = ("patient_match_" + aProfileLevel + "_profile_" + aTestID + "_parameters_" + test_description.parameterize.underscore).to_sym
+        #id test_id
+        title "Patient $match for profile IDI Patient " + aProfileLevel + " with " + test_description + " SHOULD " + aTitle + " return data"
+        description "Verify that the Patient $match returns " + aDescription + " data for profile IDI Patient " + aProfileLevel + " with " + test_description
+
+        run do
+          aDOB = bDOB ? '1991-12-31' : nil
+          aPhone = bTelecom ? '555-555-5555' : nil
+          aStreetAddress = bAddress ? '135 Dolly Madison Pkwy' : nil
+          aCity = bAddress ? 'McLean' : nil
+          aMedicalRecordNumber = bIdentifier ? 'MS12121212' : nil
+          aLastName = bLastName ? 'Doe' : nil
+          aFirstName = bFirstName ? 'Jane' : nil
+          aPassportNumber = bPPN ? 'US53535353' : nil
+          aDriversLicenseNumber = bDL ? '999199912' : nil
+          aEmail = bEmail ? 'jane_doe@email.com' : nil
+      
+          baseMatchRequest = MatchRequest.new(aFullName, aDOB, aSex, aPhone, aEmail, aStreetAddress, aCity, aState, aPostalCode, aPassportNumber,
+            aDriversLicenseNumber, aStateID, aMasterPatientIndex, aMedicalRecordNumber, aInsuranceMemberNumber, aInsuranceSubscriberNumber, aSocialSecurity, 
+            aProfileLevel, aCertainMatchesOnly, aLastName, aFirstName, aMiddleName)
+
+          json_request = baseMatchRequest.build_request_fhir
+          fhir_parameter = FHIR.from_contents(json_request)
+
+          fhir_operation('Patient/$match', body: fhir_parameter)
+
+          if aPositiveTest
+            assert_response_status(200)
+
+            assert_resource_type(:bundle)
+          else
+            response_status = request.status
+
+            assert(response_status != 200, "FHIR endpoint returns results for profile IDI Patient " + aProfileLevel + 
+              " when input parameters are insuffiencient to not satisfy minimum requirements")
+          end
+        end
+      end
+    end
+
+    #Input profile L1 validation    
+    aProfileLevel = 'L1'
+
+    #1. Input parameters not sufficient to return data
+    aPositiveTest = false
+
+    parameters.clear
+    parameters << {test_description: 'full name, date of birth, and passport number', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: true, bDL: false, bEmail: false}
+    parameters << {test_description: 'full name, date of birth, and drivers license', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: true, bEmail: false}
+    parameters << {test_description: 'full name, date of birth, and identifier', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: true, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: false}
+    parameters << {test_description: 'full name, date of birth, and telecom', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: true, bAddress: false, bPPN: false, bDL: false, bEmail: false}
+    parameters << {test_description: 'full name, date of birth, and email', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: true}
+    parameters << {test_description: 'full name, date of birth, and address', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: true, bPPN: false, bDL: false, bEmail: false}
+       
+    #generate_match_input_tests( parameters, aProfileLevel, aPositiveTest )
+    #Create tests for base profile with minimum parameter specified that should return results
+    parameters.each do |parameter|
+      test do
+        test_description = parameter[:test_description].to_s
+        bLastName = parameter[:bLastName]
+        bFirstName = parameter[:bFirstName]
+        bDOB = parameter[:bDOB]
+        bIdentifier = parameter[:bIdentifier]
+        bTelecom = parameter[:bTelecom]
+        bAddress = parameter[:bAddress]
+        bPPN = parameter[:bPPN]
+        bDL = parameter[:bDL]
+        bEmail = parameter[:bEmail]
+
+        if aPositiveTest
+          aTestID = "minimum"
+          aTitle = ""
+          aDescription = ""
+        else
+          aTestID = "insufficient"
+          aTitle = "NOT"
+          aDescription = "no"
+        end
+
+        #test_id = ("patient_match_" + aProfileLevel + "_profile_" + aTestID + "_parameters_" + test_description.parameterize.underscore).to_sym
+        #id test_id
+        title "Patient $match for profile IDI Patient " + aProfileLevel + " with " + test_description + " SHOULD " + aTitle + " return data"
+        description "Verify that the Patient $match returns " + aDescription + " data for profile IDI Patient " + aProfileLevel + " with " + test_description
+
+        run do
+          aDOB = bDOB ? '1991-12-31' : nil
+          aPhone = bTelecom ? '555-555-5555' : nil
+          aStreetAddress = bAddress ? '135 Dolly Madison Pkwy' : nil
+          aCity = bAddress ? 'McLean' : nil
+          aMedicalRecordNumber = bIdentifier ? 'MS12121212' : nil
+          aLastName = bLastName ? 'Doe' : nil
+          aFirstName = bFirstName ? 'Jane' : nil
+          aPassportNumber = bPPN ? 'US53535353' : nil
+          aDriversLicenseNumber = bDL ? '999199912' : nil
+          aEmail = bEmail ? 'jane_doe@email.com' : nil
+      
+          baseMatchRequest = MatchRequest.new(aFullName, aDOB, aSex, aPhone, aEmail, aStreetAddress, aCity, aState, aPostalCode, aPassportNumber,
+            aDriversLicenseNumber, aStateID, aMasterPatientIndex, aMedicalRecordNumber, aInsuranceMemberNumber, aInsuranceSubscriberNumber, aSocialSecurity, 
+            aProfileLevel, aCertainMatchesOnly, aLastName, aFirstName, aMiddleName)
+
+          json_request = baseMatchRequest.build_request_fhir
+          fhir_parameter = FHIR.from_contents(json_request)
+
+          fhir_operation('Patient/$match', body: fhir_parameter)
+
+          if aPositiveTest
+            assert_response_status(200)
+
+            assert_resource_type(:bundle)
+          else
+            response_status = request.status
+
+            assert(response_status != 200, "FHIR endpoint returns results for profile IDI Patient " + aProfileLevel + 
+              " when input parameters are insuffiencient to not satisfy minimum requirements")
+          end
+        end
+      end
+    end
+
+    #2. Input parameters minimum required to return data
+    aPositiveTest = true
+    
+    parameters.clear
+    parameters << {test_description: 'passport number, full name, date of birth, and identifier', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: true, bTelecom: false, bAddress: false, bPPN: true, bDL: false, bEmail: false}
+    parameters << {test_description: 'drivers license, full name, date of birth, and identifier', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: true, bTelecom: false, bAddress: false, bPPN: false, bDL: true, bEmail: false}
+    parameters << {test_description: 'passport number, full name, date of birth, and phone number', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: true, bAddress: false, bPPN: true, bDL: false, bEmail: false}
+    parameters << {test_description: 'passport number, full name, date of birth, and email', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: true, bDL: false, bEmail: true}
+    parameters << {test_description: 'passport number, full name, date of birth, and address', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: true, bPPN: true, bDL: false, bEmail: false}
+       
+    #generate_match_input_tests(parameters, aProfileLevel, aPositiveTest)
+    #Create tests for base profile with minimum parameter specified that should return results
+    parameters.each do |parameter|
+      test do
+        test_description = parameter[:test_description].to_s
+        bLastName = parameter[:bLastName]
+        bFirstName = parameter[:bFirstName]
+        bDOB = parameter[:bDOB]
+        bIdentifier = parameter[:bIdentifier]
+        bTelecom = parameter[:bTelecom]
+        bAddress = parameter[:bAddress]
+        bPPN = parameter[:bPPN]
+        bDL = parameter[:bDL]
+        bEmail = parameter[:bEmail]
+
+        if aPositiveTest
+          aTestID = "minimum"
+          aTitle = ""
+          aDescription = ""
+        else
+          aTestID = "insufficient"
+          aTitle = "NOT"
+          aDescription = "no"
+        end
+
+        #test_id = ("patient_match_" + aProfileLevel + "_profile_" + aTestID + "_parameters_" + test_description.parameterize.underscore).to_sym
+        #id test_id
+        title "Patient $match for profile IDI Patient " + aProfileLevel + " with " + test_description + " SHOULD " + aTitle + " return data"
+        description "Verify that the Patient $match returns " + aDescription + " data for profile IDI Patient " + aProfileLevel + " with " + test_description
+
+        run do
+          aDOB = bDOB ? '1991-12-31' : nil
+          aPhone = bTelecom ? '555-555-5555' : nil
+          aStreetAddress = bAddress ? '135 Dolly Madison Pkwy' : nil
+          aCity = bAddress ? 'McLean' : nil
+          aMedicalRecordNumber = bIdentifier ? 'MS12121212' : nil
+          aLastName = bLastName ? 'Doe' : nil
+          aFirstName = bFirstName ? 'Jane' : nil
+          aPassportNumber = bPPN ? 'US53535353' : nil
+          aDriversLicenseNumber = bDL ? '999199912' : nil
+          aEmail = bEmail ? 'jane_doe@email.com' : nil
+      
+          baseMatchRequest = MatchRequest.new(aFullName, aDOB, aSex, aPhone, aEmail, aStreetAddress, aCity, aState, aPostalCode, aPassportNumber,
+            aDriversLicenseNumber, aStateID, aMasterPatientIndex, aMedicalRecordNumber, aInsuranceMemberNumber, aInsuranceSubscriberNumber, aSocialSecurity, 
+            aProfileLevel, aCertainMatchesOnly, aLastName, aFirstName, aMiddleName)
+
+          json_request = baseMatchRequest.build_request_fhir
+          fhir_parameter = FHIR.from_contents(json_request)
+
+          fhir_operation('Patient/$match', body: fhir_parameter)
+
+          if aPositiveTest
+            assert_response_status(200)
+
+            assert_resource_type(:bundle)
+          else
+            response_status = request.status
+
+            assert(response_status != 200, "FHIR endpoint returns results for profile IDI Patient " + aProfileLevel + 
+              " when input parameters are insuffiencient to not satisfy minimum requirements")
+          end
+        end
+      end
+    end
+=end
+    test do
+      id :patient_match_advanced
+      title 'Patient $match is valid for advanced search'
+      description "Verify that the Patient $match resource returned from the server is a valid FHIR resource."
+
+      makes_request :match_operation_advanced
+
+      run do
+        json_request = load_resource('test_queries/patient_match_search_parameter.json')
+        puts "======================="
+        puts "DEBUG: #{json_request}"
+        puts "======================="
+        fhir_parameter = FHIR.from_contents(json_request)
+
+        fhir_operation('Patient/$match', body: fhir_parameter, name: :match_operation_advanced)
+
+        assert_response_status(200)
+
+        assert_resource_type(:bundle)
+
+        #assert_valid_bundle_entries(resource_types: 'Patient')
+      end
+    end
+
+    test do
+      id :patient_match_resource_in_bundle
+      title 'Patient $match returns bundle with patient resources'
+      description "Verify that Patient $match returns bundle of patient resources"
+
+      uses_request :match_operation_advanced
+      
+      run do
+        skip_if !resource.is_a?(FHIR::Bundle), 'No Bundle returned from match operation'
+
+        assert resource.entry.length.positive?, 'Bundle has no entries'
+
+        entry = resource.entry.first
+
+        assert entry.resource.is_a?(FHIR::Patient), 'The first entry in the Bundle is not a Patient'
+      end
+    end
+
+    #Patient 1433204 is part of the 
+    test do
+      id :search_identity_to_identity
+      title 'Server matching and searching is Identity-to-Identity, not Record-to-Record'
+      description %Q(
+        This test will ensure the server matches on Identity-to-Identity and not Record-to-Record.
+        Patient records with link of type 'replaced-by' is excluded from the search and match.
+      )
+      uses_request :match_operation_advanced
+      run do
+        response_json = JSON.parse(resource.to_json)
+
+        response_json['entry'].each do |entry_item|
+          resource_type = entry_item['resource']['resourceType']
+          patient_id = entry_item['resource']['id']
+          
+          assert( patient_id != '1433204', "Patient $match returned patient with 'replaced-by' link that should no longer be used")
+        end
+      end
+    end
+
+    test do
+      id :every_valid_record
+      title 'Server returns every valid record for patient $match'
+      description %Q(
+        Match output SHOULD contain every record of every candidate identity, subject to volume limits
       )
 
-      uses_request :match_operation
+      # Use saved request/response from fhir_operation call in previous test
+      uses_request :match_operation_advanced
 
       run do
+        response_json = resource.to_json # resource is body from response as FHIR::Model
 
-        #puts response_json
-        response = JSON[response_json]
-        assert_valid_json(response_json, message = "Invalid JSON response received - expected: #{expectedResultCnt} - received: #{numberOfRecordsReturned}")
-        numberOfRecordsReturned = response['total'] 
-        puts "number of records returned in bundle ---- #{numberOfRecordsReturned} "
-        puts "number of records expected in bundle ---- #{expectedResultCnt} "
-        assert numberOfRecordsReturned.to_i() == expectedResultCnt.to_i(), "Incorrect Number of Records returned"
-        #output numberOfRecordsReturned: numberOfRecordsReturned
+        records_returned = resource.total
 
+        #There should be 3 records that are returned
+        assert(records_returned >= 3, "Patient $match returned only #{records_returned} records while there are at least 3 patient records")
       end
 
     end
 
     test do
-      #input :expectedResultCnt
-      #input :response_json
-      title 'Determine whether or not the records are sorted by ID and Score'
-      description %(Match output SHOULD return records sorted by score      )
+      id :patient_link_valid
+      title 'Server indicates linkage between records by the Patient.link field'
+      description %Q(
+        This test ensures linked patient records are listed in the Patient.link field.
+      )
 
-      uses_request :match_operation
-
-      run do
-
-        i =0
-        curr_id=0
-        prev_id=0
-        curr_score=0
-        prev_score=0
-        is_sorted=true
-
-        responseJSON = JSON.parse(response_json)
-
-
-        responseJSON["entry"].each do |item|
-          curr_score=item.dig("resource","score")
-          curr_id=item.dig("resource","id")
-          if i  > 0
-            if prev_id.to_s >= curr_id.to_s && prev_score.to_s <= curr_score_to_s
-            	is_sorted=false
-            end
-            prev_score=curr_score
-            prev_id=curr_id
-            i= i + 1
-          end
-        end
-        puts "@@@@@@@@@@@@@   Is Sorted=#{is_sorted}  @@@@@@@@@@"
-        assert is_sorted == true, "Returned records are not sorted by patient id ( asc ) and score ( desc) "
-      end
-    end
-
-    test do
-      #input :response_json
-      title 'Determine whether or not  the patient.link field references an underlying patient'
-      description %(Determine whether or not  the patient.link field references an underlying patient    )
-
-      uses_request :match_operation
+      # Use saved request/response from fhir_operation call in previous test
+      uses_request :match_operation_advanced
 
       run do
+        response_json = JSON.parse(resource.to_json) # resource is body from response as FHIR::Model
+        entries = response_json['entry']
 
-        responseJSON = JSON.parse(response_json)
-        responseJSON["entry"].each do |item|
-          puts "got here"
-          patientLinkList= item.dig("resource","link")
-          puts "****patient Link List=#{patientLinkList}"
-          if !patientLinkList.nil?
-            patientLinkList.each do |patient_link|
-              puts "patient_link=#{patient_link}"
-              patientURL=patient_link("other","reference")
-              puts "PatientLink URL=#{patientURL}"
-              patientID=patientURL.sub("Patient/","");
+        skip_if entries.nil? || entries.length == 0, 'This test is skipped since Patient $match returned no patient records'
 
-              fhir_read(:patient, patientID, client: :with_custom_headers)
+        entries.each do |entry_item|
+          patient_id = entry_item['resource']['id']
+          links = entry_item['resource']['link']
+          if links != nil
+            links.each do |link|
+              linked_patient_id = link['other']['reference'].gsub("Patient/", "")
+              puts "Links: #{link}"
+              puts "Linked Patient ID: #{linked_patient_id} for patient #{patient_id}"
+              
+              fhir_read(:patient, linked_patient_id)
               assert_response_status(200)
-
             end
           end
         end
       end
     end
 
+    test do
+      id :return_patients_above_score_of_6
+      title "Server returns a bundle containing patient records with match score of 0.6 or above"
+      description %Q(
+        This test validates the bundle returned contains patient records with match score of 0.6 or above
+      )
 
+      output :matches_below_point_six
+      uses_request :match_operation_advanced
+      run do
+        response_json = JSON.parse(resource.to_json)
+
+        entries = response_json['entry']
+
+        skip_if entries.nil? || entries.length == 0, 'This test is skipped since Patient $match returned no patient records'
+
+        patients_with_score_below_point_six = []
+
+        entries.each do |entry_item|
+          if entry_item['search']['score'] < 0.6
+            puts "Patient #{entry_item['resource']['id']} has match score of #{entry_item['search']['score'].to_s}"
+            patients_with_score_below_point_six << {patient_id: entry_item['resource']['id'], score: entry_item['search']['score']}
+          end
+        end
+
+        assert patients_with_score_below_point_six.length == 0, "Server returns matches with score below 0.6 #{patients_with_score_below_point_six.to_s}"
+
+        output matches_below_point_six: patients_with_score_below_point_six.to_s
+      end
+    end
+
+    test do
+      id :return_computed_score
+      title "Server designates a grading of match quality using table in section 4.7 Scoring Matches & Responder's System Match Output Quality Score of the implementation guide"
+      description %Q(
+        This test validates scores are calculated based on the Scoring Matches table in the implementation guide 
+      )
+
+      #Initialize variables
+      bMPI, bMRN, bDriversLicense, bStateID, bPassportNumber, bInsuranceMemberNumber, bInsuranceSubscriberNumber, bSocialSecurityNumber, bSSN4 = 
+        false, false, false, false, false, false, false, false, false
+      bLastName, bFirstName, bMiddleInitial, bMiddleName, bDateOfBirth, bSex = false, false, false, false, false, false
+      bEmail, bPhone, bStreetAddress, bCity, bState, bZip = false, false, false, false, false, false
+      bScoreMatches = false
+      item_score, computed_score_min, computed_score_max = 0.0, 0.0, 1.0
+
+      #Declare output variables for parameters passed as json
+      output :last_name, :first_name, :middle_name, :date_of_birth, :sex, :phone_number, :email, :street_address, :city, :state, :postal_code
+      output :passport_number, :state_id, :drivers_license_number, :insurance_member_number, :insurance_subscriber_number, :medical_record_number,
+        :master_patient_index, :social_security
+      output :given_names, :identifiers, :contact_points, :address
+
+      #Hold unmatched score records
+      unmatchedRecords = []
+
+      uses_request :match_operation_advanced
+
+      run do
+        request_json = request.request_body
+
+        puts "Request JSON: #{request_json}"
+
+        matchRequest = MatchRequestJSON.new(request_json)
+
+        output last_name: matchRequest.last_name, first_name: matchRequest.first_name, middle_name: matchRequest.middle_name, 
+          date_of_birth: matchRequest.date_of_birth, sex: matchRequest.sex, phone_number: matchRequest.phone_number, email: matchRequest.email,
+          street_address: matchRequest.street_address, city: matchRequest.city, state: matchRequest.state, postal_code: matchRequest.postal_code
+        output passport_number: matchRequest.passport_number, state_id: matchRequest.state_id, drivers_license_number: matchRequest.drivers_license_number,
+          insurance_member_number: matchRequest.insurance_member_number, insurance_subscriber_number: matchRequest.insurance_subscriber_number,
+          medical_record_number: matchRequest.medical_record_number, master_patient_index: matchRequest.master_patient_index,
+          social_security: matchRequest.social_security
+        output given_names: matchRequest.given_names, identifiers: matchRequest.identifiers, contact_points: matchRequest.contact_points,
+          address: matchRequest.address
+
+        response_json = JSON.parse(resource.to_json)
+
+        entries = response_json['entry']
+
+        skip_if entries.nil? || entries.length == 0, 'This test is skipped since Patient $match returned no patient records'
+
+        entries.each do |entry_item|
+          #Reset variable values for each loop
+          bMPI, bMRN, bDriversLicense, bStateID, bPassportNumber, bInsuranceMemberNumber, bInsuranceSubscriberNumber, bSocialSecurityNumber, bSSN4 = 
+            false, false, false, false, false, false, false, false, false
+          bLastName, bFirstName, bMiddleInitial, bMiddleName, bDateOfBirth, bSex = false, false, false, false, false, false
+          bEmail, bPhone, bStreetAddress, bCity, bState, bZip = false, false, false, false, false, false
+          bScoreMatches = false
+
+          item_score, computed_score_min, computed_score_max = 0.0, 0.0, 1.0
+
+          resource_type = entry_item['resource']['resourceType']
+          patient_id = entry_item['resource']['id']
+          puts "Record Number: #{response_json['entry'].index}"
+          
+          assert resource_type != nil && resource_type == 'Patient', "Bundle does not have 'Patient' resource"
+
+          if resource_type != nil && resource_type == 'Patient'
+            #Get item score from resource json
+            item_score = entry_item['search']['score']
+
+            #Match identifiers
+            puts "Identifiers: #{@identifiers}"
+            if !passport_number.nil? || !state_id.nil? || !drivers_license_number.nil? || !insurance_member_number.nil? ||
+              !insurance_member_number.nil? || !medical_record_number.nil? || !master_patient_index.nil? || !social_security.nil?
+              patient_identifiers = entry_item['resource']['identifier']
+              puts "Identifier: #{patient_identifiers}"
+
+              if !patient_identifiers.nil?
+                patient_identifiers.each do |patient_identifier|
+                  #Reset identifier variables
+                  identifier_code, identifier_system, identifier_value = '', '', ''
+                  identifier_coding = patient_identifier['type']['coding']
+
+                  identifier_coding.each do |coding|
+                    identifier_system = coding['system']
+                    identifier_code = coding['code'] == 'SS' && social_security != nil && social_security.length == 4 ? 'SS4': coding['code']
+                    puts "Identifier System: #{identifier_system}"
+                    puts "Identifier Code: #{identifier_code}"
+                  end
+                  identifier_value = patient_identifier['value'] 
+                  puts "Identifier Value: #{identifier_value}"
+    
+                  #Check for matching identifiers
+                  if identifier_value != nil && identifier_code != nil
+                    case identifier_code
+                      when 'DL' then bDriversLicense = true if drivers_license_number != nil && identifier_value == drivers_license_number
+                      when 'STID' then bStateID = true if state_id != nil && identifier_value == state_id
+                      when 'PPN' then bPassportNumber = true if passport_number != nil && identifier_value == passport_number
+                      when 'SS4' then bSSN4 = true if identifier_value.length >= 4 && identifier_value[-4,4] = social_security
+                      when 'SS' then bSocialSecurityNumber = true if social_security != nil && identifier_value == social_security
+                      when 'MPI' then bMPI = true if master_patient_index != nil && identifier_value == master_patient_index
+                      when 'MRL' then bMRN = true if medical_record_number != nil && identifier_value == medical_record_number
+                      when 'NIIP-M' then bInsuranceMemberNumber = true if insurance_member_number != nil && identifier_value == insurance_member_number
+                      when 'NIIP-S' then bInsuranceSubscriberNumber = true if insurance_subscriber_number != nil && identifier_value == insurance_subscriber_number
+                    end
+                  end
+                end
+              end
+            end
+
+            #Match names
+            if !last_name.nil? || !first_name.nil? || !middle_name.nil?
+              names = entry_item['resource']['name']
+              puts "Name: #{names}"
+              if names != nil
+                names.each do |name|
+                  family = name['family']
+                  bLastName = true if !family.nil? && family == last_name
+                  rGivenNames = name['given']
+                  bFirstName = true if !rGivenNames.empty? && rGivenNames[0] != nil && rGivenNames[0] == first_name
+                  if !middle_name.nil? && rGivenNames.length > 1 && rGivenNames[1] != nil
+                    bMiddleInitial = true if middle_name.length == 1 && rGivenNames[1].length == 1 && rGivenNames[1][0,1] == @middle_name
+                    bMiddleName = true if middle_name.length > 1 && rGivenNames[1].length > 1 && rGivenNames[1] == middle_name
+                  end
+                  puts "Last Name: #{family}"
+                  puts "Given Names: #{rGivenNames}"
+                  puts "First Name: #{rGivenNames[0]}" if !rGivenNames.empty?
+                  puts "Middle Names #{rGivenNames[1]}" if rGivenNames.length > 1
+                end
+              end
+            end
+
+            #Match phone number and email
+            if !phone_number.nil? || !email.nil?
+              aTelecom = entry_item['resource']['telecom']
+              puts "Telecom: #{aTelecom}"
+              if aTelecom != nil
+                aTelecom.each do |telecom|
+                  telecom_system = telecom['system']
+                  telecom_value = telecom['value']
+                  bPhone = true if phone_number != nil && telecom_system == 'phone' && telecom_value != nil && telecom_value == phone_number
+                  bEmail = true if email != nil && telecom_system == 'email' && telecom_value != nil && telecom_value == email
+                end
+              end
+            end
+
+            #Match address
+            if !street_address.nil? || !city.nil? || !state.nil? || !postal_code.nil?
+              aAddress = entry_item['resource']['address']
+              puts "Address: #{aAddress}"
+              if aAddress != nil
+                aAddress.each do |address|
+                  address_line = address['line'].flatten
+                  address_city = address['city']
+                  address_state = address['state']
+                  address_zip = address['postalCode']
+                  bStreetAddress = true if street_address != nil && address_line != nil && address_line == street_address
+                  bCity = true if city != nil && address_city != nil && address_city == city
+                  bState = true if state != nil && address_state != nil && address_state == state
+                  bZip = true if postal_code != nil && address_zip != nil && address_zip[0,5] == postal_code[0,5]
+                end
+              end
+            end
+
+            #Check for matching date of birth and sex
+            bDateOfBirth = true if date_of_birth != nil && entry_item['resource']['birthDate'] != nil && entry_item['resource']['birthDate'] == date_of_birth
+            bSex = true if sex != nil && entry_item['resource']['gender'] != nil && entry_item['resource']['gender'] == sex
+
+            #Calculate min and max scores for each match condition listed in 
+            case
+              when bMRN then computed_score_min, computed_score_max = 0.8, 0.99
+              when bMPI then computed_score_min, computed_score_max = 0.8, 0.99
+              when bFirstName && bLastName && bPassportNumber then computed_score_min, computed_score_max = 0.8, 0.99
+              when bFirstName && bLastName && bDriversLicense then computed_score_min, computed_score_max = 0.8, 0.99
+              when bFirstName && bLastName && bInsuranceMemberNumber then computed_score_min, computed_score_max = 0.8, 0.99
+              when bFirstName && bLastName && bDateOfBirth && bInsuranceSubscriberNumber then computed_score_min, computed_score_max = 0.7, 0.8
+              when bFirstName && bLastName && bSocialSecurityNumber then computed_score_min, computed_score_max = 0.7, 0.8
+              when bFirstName && bLastName && bInsuranceSubscriberNumber then computed_score_min, computed_score_max = 0.7, 0.8
+              when bFirstName && bLastName && bDateOfBirth && bStreetAddress && bZip then computed_score_min, computed_score_max = 0.7, 0.8
+              when bFirstName && bLastName && bDateOfBirth && bStreetAddress && bCity && bState then computed_score_min, computed_score_max = 0.7, 0.8
+              when bFirstName && bLastName && bDateOfBirth && bEmail then computed_score_min, computed_score_max = 0.7, 0.8
+              when bFirstName && bLastName && bDateOfBirth && bSex && bSSN4 then computed_score_min, computed_score_max = 0.6, 0.7
+              when bFirstName && bLastName && bDateOfBirth && bSex && bPhone then computed_score_min, computed_score_max = 0.6, 0.7
+              when bFirstName && bLastName && bDateOfBirth && bSex && bZip then computed_score_min, computed_score_max = 0.6, 0.7
+              when bFirstName && bLastName && bDateOfBirth && bSex && bMiddleName then computed_score_min, computed_score_max = 0.6, 0.7
+              when bFirstName && bLastName && bDateOfBirth && bSex && bPhone then computed_score_min, computed_score_max = 0.6, 0.7
+              when bFirstName && bLastName && bDateOfBirth && bSex && bMiddleInitial then computed_score_min, computed_score_max = 0.5, 0.6
+              when bFirstName && bLastName && bDateOfBirth && bSex then computed_score_min, computed_score_max = 0.5, 0.6
+              when bFirstName && bLastName && bDateOfBirth then computed_score_min, computed_score_max = 0.5, 0.6
+              else computed_score_min, computed_score_max = 0.0, 0.5
+            end
+
+            if item_score <= computed_score_min || item_score > computed_score_max
+              bScoreMatches = false
+              unmatchedRecords << {patient_id: patient_id, item_score: item_score, computed_score_min: computed_score_min, computed_score_max: computed_score_max}
+            end
+          end
+        end
+        assert(bScoreMatches, "Scores for following matched records does not comply with score designation in Responder’s System Match Output Quality Score table: #{unmatchedRecords}")
+      end
+    end
+
+    test do
+      id :sorting_response_by_score
+      title "Response from an 'MPI' query is a bundle containing patient records ordered from most likely to least likely"
+      description %Q(
+        This test validates the bundle returned is sorted by the score from most likely to least likely
+      )
+
+      uses_request :match_operation_advanced
+
+      run do
+        response_json = JSON.parse(resource.to_json)
+
+        entries = response_json['entry']
+
+        skip_if entries.nil? || entries.length == 0, 'This test is skipped since Patient $match returned no patient records'
+
+        score_returned = entries.first['search']['score']
+        patient_id = entries.first['resource']['id']
+        prev_score = 1.0
+        previous_patient_id = ''
+        is_sorted = true        
+
+        entries.each do |entry_item|          
+          patient_id = entry_item['resource']['id']
+          score_returned = entry_item['search']['score']
+
+          is_sorted = false if score_returned > prev_score
+
+          break if !is_sorted
+
+          previous_patient_id = patient_id
+          prev_score = score_returned
+        end
+        
+        assert( is_sorted, "Bundle containing patient records is out of order: patient #{patient_id} with score of #{score_returned} is returned after patient #{previous_patient_id} with score of #{prev_score}")
+      end
+    end
   end
 end

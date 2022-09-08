@@ -34,6 +34,44 @@ module IdentityMatching
       end
     end
 
+    #Add 5 patients for patient match
+    test do
+      title 'Server can create patients for $match'
+      id :create_for_match_operation
+      description "Expects five patients to be created for patient match"
+
+      output :patients_for_patient_match
+
+      run do
+        patients = []
+        patients << {patient_id: "1244780", path: "test_patients/patient0.json"}
+        patients << {patient_id: "151204", path: "test_patients/patient1.json"}
+        patients << {patient_id: "1433204", path: "test_patients/patient2.json"}
+        patients << {patient_id: "1244794", path: "test_patients/patient3.json"}
+        patients << {patient_id: "pat013", path: "test_patients/patient4.json"}
+        
+        record_creation_status = ''
+
+        patients.each do |patient|
+          patientID = patient[:patient_id]
+          resourcePath = patient[:path]
+
+          fhir_read(:patient, patientID)
+          if request.status = 200
+            record_creation_status = record_creation_status + "Patient ID: " + patientID + " already exists; "
+          else
+            patient_json = load_resource(resourcePath)
+            patient_fhir = FHIR.from_contents(patient_json)
+  
+            response = post('Patient', body: patient_fhir.to_json, headers: {'Content-Type' => 'application/fhir+json'})
+            assert (response.status > 199 && response.status < 300) or (response.status == 303)
+            record_creation_status = record_creation_status + "Patient ID: " + patientID + " has been created; "
+          end
+        end
+        output patients_for_patient_match: record_creation_status
+      end
+    end
+
     test do
       title 'Server can index patients'
       id :index

@@ -31,10 +31,20 @@
       "text": "National Insurance Payor Identifier"
     },
     "value": "9800010077"
+  }, {
+    "type": {
+      "coding": [ {
+        "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+        "code": "MPI",
+        "display": "Master Patient Index"
+      }],
+      "text": "Master Patient Index"
+    },
+    "value": "IX515196391"
   } ],
   "name": [ {
-    "family": "Queentin",
-    "given": [ "Vladimir" ]
+    "family": "Quinton",
+    "given": [ "Vladimir", "Alan", "Vlad" ]
   } ],
   "maritalStatus" : {
     "coding" : [
@@ -98,7 +108,7 @@
       "other": {
         "reference": "Patient/1433204"
       },
-      "type": "seealso"
+      "type": "replaces"
     },
     {
       "other": {

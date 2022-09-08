@@ -8,10 +8,10 @@
         "resourceType": "Patient",
         "meta": {
           "profile" : ["<%= model.profile %>"]
-        },
+        }
 
-		<% if model.identifiers != nil %>
-        "identifier": [
+		<% if model.identifiers? %>
+       ,  "identifier": [
 		  <% model.identifiers.each_with_index do |identifier, idx| %>
           {
             "type": {
@@ -27,59 +27,60 @@
             "value": "<%= identifier[:value] %>"
           }<% if idx + 1 < model.identifiers.length %>,<% end %>
 		  <% end %> <%# close identifiers.each %>
-        ],
+        ]
 		<% end %>
-        <% if model.given_name != nil %>
-        "name": [
-          {
-            "family": "<%= model.last_name %>",
-            "given": ["<%= model.given_name %>"]
-          }
-        ],
-        <% else %>
-        "name": [
-          {
-            "family": "<%= model.last_name %>"
-          }
-        ],
+    <% if model.last_name != nil || (model.given_names != nil && model.given_names.size > 0) %>
+      , "name": [
+        {
+          <% if model.last_name != nil %>
+          "family": "<%= model.last_name %>" <% if model.given_names != nil && model.given_names.size > 0 %>,<% end %>
+          <% end %>
+          <% if model.given_names != nil && model.given_names.size > 0 %>
+          "given": <%= model.given_names %>
+          <% end %>
+        }
+      ]
 		<% end %>
-		<% if model.phone_number != nil %>
-		"telecom": [ {
-			"system": "phone",
-			"value": "<%= model.phone_number %>",
-			"use": "mobile"
-		} ],
-		<% end %>
-		<% if model.email != nil && !model.email.empty? %>
-		"telecom": [ {
-			"system": "email",
-			"value": "<%= model.email %>"
-		} ],
+		<% if model.contact_points? == true %>
+		, "telecom": [ 
+      <% model.contact_points.each_with_index do |contact_point, idx| %>
+      {
+			"system": "<%= contact_point[:system] %>"
+			, "value": "<%= contact_point[:value] %>"
+      <% if contact_point[:system] != "email" %>
+      , "use": "<%= contact_point[:use] %>"
+      <% end %>
+      }
+      <% if idx + 1 < model.contact_points.length %>,<% end %>
+    <% end %> <%# close contact_points.each %>
+    ]
 		<% end %>
 		<% if !model.address.strip.empty? %>
-        "address": [
+        , "address": [
           {
             "type": "physical",
             <% if model.street_address != nil %>
-              "line": ["<%= model.street_address %>"],
-			<% end %>
+            "line": ["<%= model.street_address %>"],
+            <% end %>
             <% if model.city != nil %>
-              "city": "<%= model.city %>",
+            "city": "<%= model.city %>",
             <% end %>
             <% if model.state != nil %>
-              "state": "<%= model.state %>",
+            "state": "<%= model.state %>",
             <% end %>
             <% if model.postal_code != nil %>
-              "postalCode": "<%= model.postal_code %>",
+            "postalCode": "<%= model.postal_code %>",
             <% end %>
             "use": "home"
           }
-        ],
+        ]
         <% end %>
 		<% if model.sex != nil %>
-		  "gender": "<%= model.sex %>",
+		  , "gender": "<%= model.sex %>"
 		<% end %>
-        "birthDate": "<%= model.date_of_birth %>"
+    <% if model.date_of_birth != nil %>
+        , "birthDate": "<%= model.date_of_birth %>"
+    <% end %>
       }
     },
     {

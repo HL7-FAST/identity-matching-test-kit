@@ -27,6 +27,9 @@
   "name": [ {
     "family": "Queetin",
     "given": [ "Alan" ]
+  }, {
+    "family": "Quinton",
+    "given": [ "Vladimir" ]
   } ],
   "maritalStatus" : {
     "coding" : [
@@ -63,19 +66,7 @@
       "other": {
         "reference": "Patient/1244780"
       },
-      "type": "seealso"
-    },
-    {
-      "other": {
-        "reference": "Patient/151204"
-      },
-      "type": "seealso"
-    },
-    {
-      "other": {
-        "reference": "Patient/pat013"
-      },
-      "type": "seealso"
+      "type": "replaced-by"
     }
   ]
 }

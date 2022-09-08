@@ -35,7 +35,7 @@
           "use": "official",
           "family": "Quinton",
           "given": [
-              "Vlad",
+              "Vladimir",
               "Alan"
           ]
       }
@@ -59,19 +59,13 @@
       "other": {
         "reference": "Patient/1244780"
       },
-      "type": "seealso"
-    },
-    {
-      "other": {
-        "reference": "Patient/151204"
-      },
-      "type": "seealso"
+      "type": "refer"
     },
     {
       "other": {
         "reference": "Patient/1433204"
       },
-      "type": "seealso"
+      "type": "refer"
     }
   ]
 }

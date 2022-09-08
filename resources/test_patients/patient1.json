@@ -25,6 +25,9 @@
   "name": [ {
     "family": "Quintin",
     "given": [ "Alan" ]
+  }, {
+    "family": "Quinton",
+    "given": ["Vladimir", "Alan"]
   } ],
   "maritalStatus" : {
     "coding" : [
@@ -60,7 +63,7 @@
       "other": {
         "reference": "Patient/1244780"
       },
-      "type": "seealso"
+      "type": "refer"
     },
     {
       "other": {

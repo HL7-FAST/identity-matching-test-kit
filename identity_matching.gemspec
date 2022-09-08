@@ -24,4 +24,5 @@ Gem::Specification.new do |spec|
   ].flatten
 
   spec.require_paths = ['lib']
+  spec.add_runtime_dependency "activesupport"
 end

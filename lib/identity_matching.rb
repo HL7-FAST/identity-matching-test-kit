@@ -21,7 +21,7 @@ module IdentityMatching
     input :url,
         title: 'FHIR endpoint',
         description: 'URL of FHIR endpoint',
-        default: 'http://host.docker.internal:3000/fhir'
+        default: 'http://host.docker.internal:3000/baseR4/'
 
     input :access_token,
         title: 'Bearer Token',
