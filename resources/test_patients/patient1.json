@@ -27,8 +27,8 @@
     "given": [ "Alan" ]
   }, {
     "family": "Quinton",
-    "given": ["Vladimir", "Alan"]
-  } ],
+    "given": [ "Vladimir" ]
+  }],
   "maritalStatus" : {
     "coding" : [
       {

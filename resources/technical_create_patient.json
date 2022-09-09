@@ -34,7 +34,17 @@
 			"text": "Virginia Driver's License"
 		  },
 		  "value": "999199912"
-	}],
+	},{
+		"type": {
+			"coding": [ {
+			  "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+			  "code": "STID",
+			  "display": "State ID"
+			} ],
+			"text": "Virginia State ID"
+		  },
+		  "value": "VA55555534"
+		  }],
 	"name": [{
 		"family": "Doe",
 		"given": [
