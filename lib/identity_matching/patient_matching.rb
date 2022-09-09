@@ -68,10 +68,7 @@ module IdentityMatching
       title 'Test whether it is possible to gain access to patient data without authenticating'
       description %(Test whether it is possible to gain access to patient data without authenticating -
       This Test attempts to make a $match api call  without providing the authentication credentials)
-      #input :access_token;
-      #input :search_json ,
-      #  type: 'textarea'
-
+      #TODO - Description
       run do
         body = JSON[search_json]
         fhir_operation("Patient/$match", body: body, client: :default, name: :match, headers: { 'Content-Type'=>'application/fhir+json' })
@@ -89,9 +86,6 @@ module IdentityMatching
 
       run do
         json_request = load_resource('test_queries/simple_match_base.json')
-        puts "======================="
-        puts "DEBUG: #{json_request}"
-        puts "======================="
         fhir_parameter = FHIR.from_contents(json_request)
 
         fhir_operation('Patient/$match', body: fhir_parameter, name: :match_operation)
@@ -111,9 +105,6 @@ module IdentityMatching
 
       run do
           json_request = load_resource('test_queries/patient_match_no_profile.json')
-          puts "======================="
-          puts "DEBUG: #{json_request}"
-          puts "======================="
           fhir_parameter = FHIR.from_contents(json_request)
 
           fhir_operation('Patient/$match', body: fhir_parameter)
@@ -130,10 +121,7 @@ module IdentityMatching
       description "Verify that the Patient $match returns no data when the profile is invalid"
 
       run do
-          json_request = load_resource('test_queries/patient_match_no_profile.json')
-          puts "======================="
-          puts "DEBUG: #{json_request}"
-          puts "======================="
+          json_request = load_resource('test_queries/patient_match_invalid_profile.json')
           fhir_parameter = FHIR.from_contents(json_request)
 
           fhir_operation('Patient/$match', body: fhir_parameter)
@@ -151,9 +139,6 @@ module IdentityMatching
 
       run do
           json_request = load_resource('test_queries/patient_match_certain_matches_no_first_name.json')
-          puts "======================="
-          puts "DEBUG: #{json_request}"
-          puts "======================="
           fhir_parameter = FHIR.from_contents(json_request)
 
           fhir_operation('Patient/$match', body: fhir_parameter)
@@ -171,9 +156,6 @@ module IdentityMatching
 
       run do
           json_request = load_resource('test_queries/patient_match_certain_matches_false_no_first_name.json')
-          puts "======================="
-          puts "DEBUG: #{json_request}"
-          puts "======================="
           fhir_parameter = FHIR.from_contents(json_request)
 
           fhir_operation('Patient/$match', body: fhir_parameter)
@@ -189,9 +171,6 @@ module IdentityMatching
 
       run do
           json_request = load_resource('test_queries/patient_match_certain_matches_no_last_name.json')
-          puts "======================="
-          puts "DEBUG: #{json_request}"
-          puts "======================="
           fhir_parameter = FHIR.from_contents(json_request)
 
           fhir_operation('Patient/$match', body: fhir_parameter)
@@ -209,9 +188,6 @@ module IdentityMatching
 
       run do
           json_request = load_resource('test_queries/patient_match_certain_matches_false_no_last_name.json')
-          puts "======================="
-          puts "DEBUG: #{json_request}"
-          puts "======================="
           fhir_parameter = FHIR.from_contents(json_request)
 
           fhir_operation('Patient/$match', body: fhir_parameter)
@@ -227,9 +203,6 @@ module IdentityMatching
 
       run do
           json_request = load_resource('test_queries/patient_match_count_parameter.json')
-          puts "======================="
-          puts "DEBUG: #{json_request}"
-          puts "======================="
           fhir_parameter = FHIR.from_contents(json_request)
 
           fhir_operation('Patient/$match', body: fhir_parameter)
@@ -240,14 +213,14 @@ module IdentityMatching
           assert(records_returned <= 2, "Patient $match returns more records (#{records_returned}) than specified (2)")
       end
     end
-=begin
+
+    #Test cases to validate input parameters passed are valid
     aFullName = nil
     aSex = nil
     aEmail = nil
     aState = nil
     aPostalCode = nil
     aDriversLicenseNumber = nil
-    aStateID = nil
     aMasterPatientIndex = nil
     aMedicalRecordNumber = nil
     aInsuranceMemberNumber = nil
@@ -257,420 +230,70 @@ module IdentityMatching
     aMiddleName = nil
 
     #Input profile Base validation    
-    aProfileLevel = 'Base'
-
-    #1. Input parameters not sufficient to return data
-    aPositiveTest = false
-
-    parameters = []
-    parameters << {test_description: 'last name', bLastName: true, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: false}
-    parameters << {test_description: 'first name', bLastName: false, bFirstName: true, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: false}
-    parameters << {test_description: 'date of birth', bLastName: false, bFirstName: false, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: false}
-    parameters << {test_description: 'identifier', bLastName: false, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: true, bDL: false, bEmail: false}
-    parameters << {test_description: 'telecom', bLastName: false, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: true, bAddress: false, bPPN: false, bDL: false, bEmail: false}
-    parameters << {test_description: 'address', bLastName: false, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: true, bPPN: false, bDL: false, bEmail: false}
-
-    #generate_match_input_tests( parameters, aProfileLevel, aPositiveTest)
-
-    #Create tests for base profile with minimum parameter specified that should return results
-    parameters.each do |parameter|
-      test do
-        test_description = parameter[:test_description].to_s
-        bLastName = parameter[:bLastName]
-        bFirstName = parameter[:bFirstName]
-        bDOB = parameter[:bDOB]
-        bIdentifier = parameter[:bIdentifier]
-        bTelecom = parameter[:bTelecom]
-        bAddress = parameter[:bAddress]
-        bPPN = parameter[:bPPN]
-        bDL = parameter[:bDL]
-        bEmail = parameter[:bEmail]
-
-        if aPositiveTest
-          aTestID = "minimum"
-          aTitle = ""
-          aDescription = ""
-        else
-          aTestID = "insufficient"
-          aTitle = "NOT"
-          aDescription = "no"
-        end
-
-        test_id = ("patient_match_" + aProfileLevel + "_profile_" + aTestID + "_parameters_" + test_description.parameterize.underscore).to_sym
-        id test_id
-        title "Patient $match for profile IDI Patient " + aProfileLevel + " with " + test_description + " SHOULD " + aTitle + " return data"
-        description "Verify that the Patient $match returns " + aDescription + " data for profile IDI Patient " + aProfileLevel + " with " + test_description
-
-        run do
-          aDOB = bDOB ? '1991-12-31' : nil
-          aPhone = bTelecom ? '555-555-5555' : nil
-          aStreetAddress = bAddress ? '135 Dolly Madison Pkwy' : nil
-          aCity = bAddress ? 'McLean' : nil
-          aMedicalRecordNumber = bIdentifier ? 'MS12121212' : nil
-          aLastName = bLastName ? 'Doe' : nil
-          aFirstName = bFirstName ? 'Jane' : nil
-          aPassportNumber = bPPN ? 'US53535353' : nil
-          aDriversLicenseNumber = bDL ? '999199912' : nil
-          aEmail = bEmail ? 'jane_doe@email.com' : nil
-      
-          baseMatchRequest = MatchRequest.new(aFullName, aDOB, aSex, aPhone, aEmail, aStreetAddress, aCity, aState, aPostalCode, aPassportNumber,
-            aDriversLicenseNumber, aStateID, aMasterPatientIndex, aMedicalRecordNumber, aInsuranceMemberNumber, aInsuranceSubscriberNumber, aSocialSecurity, 
-            aProfileLevel, aCertainMatchesOnly, aLastName, aFirstName, aMiddleName)
-
-
-          json_request = baseMatchRequest.build_request_fhir
-          puts "======================="
-          puts "DEBUG: #{json_request}"
-          puts "======================="
-          fhir_parameter = FHIR.from_contents(json_request)
-
-          fhir_operation('Patient/$match', body: fhir_parameter)
-
-          if aPositiveTest
-            assert_response_status(200)
-
-            assert_resource_type(:bundle)
-          else
-            response_status = request.status
-
-            assert(response_status != 200, "FHIR endpoint returns results for profile IDI Patient " + aProfileLevel + 
-              " when input parameters are insuffiencient to not satisfy minimum requirements")
-          end
-        end
-      end
-    end
-
-
-    parameters.clear
-    parameters << {test_description: 'full name', bLastName: true, bFirstName: true, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: false}
-    parameters << {test_description: 'last name and date of birth', bLastName: true, bFirstName: false, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: false}
-    parameters << {test_description: 'last name and identifier', bLastName: true, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: true, bDL: false, bEmail: false}
-    parameters << {test_description: 'last name and phone number', bLastName: true, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: true, bAddress: false, bPPN: false, bDL: false, bEmail: false}
-    parameters << {test_description: 'last name and address', bLastName: true, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: true, bPPN: false, bDL: false, bEmail: false}
-    parameters << {test_description: 'first name and date of birth', bLastName: false, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: false}
-    parameters << {test_description: 'first name and identifier', bLastName: false, bFirstName: true, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: true, bDL: false, bEmail: false}
-    parameters << {test_description: 'first name and phone number', bLastName: false, bFirstName: true, bDOB: false, bIdentifier: false, bTelecom: true, bAddress: false, bPPN: false, bDL: false, bEmail: false}
-    parameters << {test_description: 'first name and address', bLastName: false, bFirstName: true, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: true, bPPN: false, bDL: false, bEmail: false}
-
-    #2. Input parameters minimum required to return data
+    aProfileLevel = '(base)'
+    #Input parameters not sufficient to return data / Input parameters minimum required to return data
     aPositiveTest = true
 
-    #generate_match_input_tests parameters, aProfileLevel, aPositiveTest
-    #Create tests for base profile with minimum parameter specified that should return results
-    parameters.each do |parameter|
-      test do
-        test_description = parameter[:test_description].to_s
-        bLastName = parameter[:bLastName]
-        bFirstName = parameter[:bFirstName]
-        bDOB = parameter[:bDOB]
-        bIdentifier = parameter[:bIdentifier]
-        bTelecom = parameter[:bTelecom]
-        bAddress = parameter[:bAddress]
-        bPPN = parameter[:bPPN]
-        bDL = parameter[:bDL]
-        bEmail = parameter[:bEmail]
+    parameters = []
 
-        if aPositiveTest
-          aTestID = "minimum"
-          aTitle = ""
-          aDescription = ""
-        else
-          aTestID = "insufficient"
-          aTitle = "NOT"
-          aDescription = "no"
-        end
-
-        #test_id = ("patient_match_" + aProfileLevel + "_profile_" + aTestID + "_parameters_" + test_description.parameterize.underscore).to_sym
-        #id test_id
-        title "Patient $match for profile IDI Patient " + aProfileLevel + " with " + test_description + " SHOULD " + aTitle + " return data"
-        description "Verify that the Patient $match returns " + aDescription + " data for profile IDI Patient " + aProfileLevel + " with " + test_description
-
-        run do
-          aDOB = bDOB ? '1991-12-31' : nil
-          aPhone = bTelecom ? '555-555-5555' : nil
-          aStreetAddress = bAddress ? '135 Dolly Madison Pkwy' : nil
-          aCity = bAddress ? 'McLean' : nil
-          aMedicalRecordNumber = bIdentifier ? 'MS12121212' : nil
-          aLastName = bLastName ? 'Doe' : nil
-          aFirstName = bFirstName ? 'Jane' : nil
-          aPassportNumber = bPPN ? 'US53535353' : nil
-          aDriversLicenseNumber = bDL ? '999199912' : nil
-          aEmail = bEmail ? 'jane_doe@email.com' : nil
-      
-          baseMatchRequest = MatchRequest.new(aFullName, aDOB, aSex, aPhone, aEmail, aStreetAddress, aCity, aState, aPostalCode, aPassportNumber,
-            aDriversLicenseNumber, aStateID, aMasterPatientIndex, aMedicalRecordNumber, aInsuranceMemberNumber, aInsuranceSubscriberNumber, aSocialSecurity, 
-            aProfileLevel, aCertainMatchesOnly, aLastName, aFirstName, aMiddleName)
-
-          json_request = baseMatchRequest.build_request_fhir
-          fhir_parameter = FHIR.from_contents(json_request)
-
-          fhir_operation('Patient/$match', body: fhir_parameter)
-
-          if aPositiveTest
-            assert_response_status(200)
-
-            assert_resource_type(:bundle)
-          else
-            response_status = request.status
-
-            assert(response_status != 200, "FHIR endpoint returns results for profile IDI Patient " + aProfileLevel + 
-              " when input parameters are insuffiencient to not satisfy minimum requirements")
-          end
-        end
-      end
-    end
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'identifier', bLastName: false, bFirstName: true, bDOB: false, bIdentifier: true, bTelecom: false, bAddress: false, bCity: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'telecom (phone number)', bLastName: false, bFirstName: false, bDOB: true, bIdentifier: false, bTelecom: true, bAddress: false, bCity: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'telecom (email)', bLastName: false, bFirstName: false, bDOB: true, bIdentifier: false, bTelecom: true, bAddress: false, bCity: false, bPPN: false, bDL: false, bSTID: false, bEmail: true}
+    parameters << {profile_level: aProfileLevel, test_type: !aPositiveTest, test_description: 'family name', bLastName: true, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bCity: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: !aPositiveTest, test_description: 'given name', bLastName: false, bFirstName: true, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bCity: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'family and given names', bLastName: true, bFirstName: true, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bCity: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: !aPositiveTest, test_description: 'address line', bLastName: false, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: true, bCity: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: !aPositiveTest, test_description: 'city', bLastName: false, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bCity: true, bPPN: false, bDL: false, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'address (address line and city)', bLastName: false, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: true, bCity: true, bPPN: false, bDL: false, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'birth date', bLastName: false, bFirstName: false, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: false, bCity: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
 
     #Input profile L0 validation    
     aProfileLevel = 'L0'
-
-    #1. Input parameters not sufficient to return data
-    aPositiveTest = false
-
-    parameters.clear
-    parameters << {test_description: 'last name and identifier', bLastName: true, bFirstName: false, bDOB: false, bIdentifier: true, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: false}
-    parameters << {test_description: 'first name and identifier', bLastName: false, bFirstName: true, bDOB: false, bIdentifier: true, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: false}
-    parameters << {test_description: 'full name and identifier', bLastName: true, bFirstName: true, bDOB: false, bIdentifier: true, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: false}
-    parameters << {test_description: 'full name and phone number', bLastName: true, bFirstName: true, bDOB: false, bIdentifier: false, bTelecom: true, bAddress: false, bPPN: false, bDL: false, bEmail: false}
-    parameters << {test_description: 'full name and email', bLastName: true, bFirstName: true, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: true}
-    parameters << {test_description: 'full name and address', bLastName: true, bFirstName: true, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: true, bPPN: false, bDL: false, bEmail: false}
-    parameters << {test_description: 'full name and date of birth', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: false}
-       
-    #generate_match_input_tests( parameters, aProfileLevel, aPositiveTest )
-    #Create tests for base profile with minimum parameter specified that should return results
-    parameters.each do |parameter|
-      test do
-        test_description = parameter[:test_description].to_s
-        bLastName = parameter[:bLastName]
-        bFirstName = parameter[:bFirstName]
-        bDOB = parameter[:bDOB]
-        bIdentifier = parameter[:bIdentifier]
-        bTelecom = parameter[:bTelecom]
-        bAddress = parameter[:bAddress]
-        bPPN = parameter[:bPPN]
-        bDL = parameter[:bDL]
-        bEmail = parameter[:bEmail]
-
-        if aPositiveTest
-          aTestID = "minimum"
-          aTitle = ""
-          aDescription = ""
-        else
-          aTestID = "insufficient"
-          aTitle = "NOT"
-          aDescription = "no"
-        end
-
-        #test_id = ("patient_match_" + aProfileLevel + "_profile_" + aTestID + "_parameters_" + test_description.parameterize.underscore).to_sym
-        #id test_id
-        title "Patient $match for profile IDI Patient " + aProfileLevel + " with " + test_description + " SHOULD " + aTitle + " return data"
-        description "Verify that the Patient $match returns " + aDescription + " data for profile IDI Patient " + aProfileLevel + " with " + test_description
-
-        run do
-          aDOB = bDOB ? '1991-12-31' : nil
-          aPhone = bTelecom ? '555-555-5555' : nil
-          aStreetAddress = bAddress ? '135 Dolly Madison Pkwy' : nil
-          aCity = bAddress ? 'McLean' : nil
-          aMedicalRecordNumber = bIdentifier ? 'MS12121212' : nil
-          aLastName = bLastName ? 'Doe' : nil
-          aFirstName = bFirstName ? 'Jane' : nil
-          aPassportNumber = bPPN ? 'US53535353' : nil
-          aDriversLicenseNumber = bDL ? '999199912' : nil
-          aEmail = bEmail ? 'jane_doe@email.com' : nil
-      
-          baseMatchRequest = MatchRequest.new(aFullName, aDOB, aSex, aPhone, aEmail, aStreetAddress, aCity, aState, aPostalCode, aPassportNumber,
-            aDriversLicenseNumber, aStateID, aMasterPatientIndex, aMedicalRecordNumber, aInsuranceMemberNumber, aInsuranceSubscriberNumber, aSocialSecurity, 
-            aProfileLevel, aCertainMatchesOnly, aLastName, aFirstName, aMiddleName)
-
-          json_request = baseMatchRequest.build_request_fhir
-          fhir_parameter = FHIR.from_contents(json_request)
-
-          fhir_operation('Patient/$match', body: fhir_parameter)
-
-          if aPositiveTest
-            assert_response_status(200)
-
-            assert_resource_type(:bundle)
-          else
-            response_status = request.status
-
-            assert(response_status != 200, "FHIR endpoint returns results for profile IDI Patient " + aProfileLevel + 
-              " when input parameters are insuffiencient to not satisfy minimum requirements")
-          end
-        end
-      end
-    end
-
-    #2. Input parameters minimum required to return data
+    #Input parameters not sufficient to return data / Input parameters minimum required to return data
     aPositiveTest = true
     
-    parameters.clear
-    parameters << {test_description: 'last name and passport number', bLastName: true, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: true, bDL: false, bEmail: false}
-    parameters << {test_description: 'first name and passport number', bLastName: false, bFirstName: true, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: true, bDL: false, bEmail: false}
-    parameters << {test_description: 'last name and drivers license', bLastName: true, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: true, bEmail: false}
-    parameters << {test_description: 'first name and drivers license', bLastName: false, bFirstName: true, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: true, bEmail: false}
-    parameters << {test_description: 'full name and date of birth and identifier', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: true, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: false}
-    parameters << {test_description: 'full name and date of birth and phone number', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: true, bAddress: false, bPPN: false, bDL: false, bEmail: false}
-    parameters << {test_description: 'full name and date of birth and email', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: true}
-    parameters << {test_description: 'full name and date of birth and address', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: true, bPPN: false, bDL: false, bEmail: false}
-       
-    #generate_match_input_tests(parameters, aProfileLevel, aPositiveTest)
-    #Create tests for base profile with minimum parameter specified that should return results
-    parameters.each do |parameter|
-      test do
-        test_description = parameter[:test_description].to_s
-        bLastName = parameter[:bLastName]
-        bFirstName = parameter[:bFirstName]
-        bDOB = parameter[:bDOB]
-        bIdentifier = parameter[:bIdentifier]
-        bTelecom = parameter[:bTelecom]
-        bAddress = parameter[:bAddress]
-        bPPN = parameter[:bPPN]
-        bDL = parameter[:bDL]
-        bEmail = parameter[:bEmail]
-
-        if aPositiveTest
-          aTestID = "minimum"
-          aTitle = ""
-          aDescription = ""
-        else
-          aTestID = "insufficient"
-          aTitle = "NOT"
-          aDescription = "no"
-        end
-
-        #test_id = ("patient_match_" + aProfileLevel + "_profile_" + aTestID + "_parameters_" + test_description.parameterize.underscore).to_sym
-        #id test_id
-        title "Patient $match for profile IDI Patient " + aProfileLevel + " with " + test_description + " SHOULD " + aTitle + " return data"
-        description "Verify that the Patient $match returns " + aDescription + " data for profile IDI Patient " + aProfileLevel + " with " + test_description
-
-        run do
-          aDOB = bDOB ? '1991-12-31' : nil
-          aPhone = bTelecom ? '555-555-5555' : nil
-          aStreetAddress = bAddress ? '135 Dolly Madison Pkwy' : nil
-          aCity = bAddress ? 'McLean' : nil
-          aMedicalRecordNumber = bIdentifier ? 'MS12121212' : nil
-          aLastName = bLastName ? 'Doe' : nil
-          aFirstName = bFirstName ? 'Jane' : nil
-          aPassportNumber = bPPN ? 'US53535353' : nil
-          aDriversLicenseNumber = bDL ? '999199912' : nil
-          aEmail = bEmail ? 'jane_doe@email.com' : nil
-      
-          baseMatchRequest = MatchRequest.new(aFullName, aDOB, aSex, aPhone, aEmail, aStreetAddress, aCity, aState, aPostalCode, aPassportNumber,
-            aDriversLicenseNumber, aStateID, aMasterPatientIndex, aMedicalRecordNumber, aInsuranceMemberNumber, aInsuranceSubscriberNumber, aSocialSecurity, 
-            aProfileLevel, aCertainMatchesOnly, aLastName, aFirstName, aMiddleName)
-
-          json_request = baseMatchRequest.build_request_fhir
-          fhir_parameter = FHIR.from_contents(json_request)
-
-          fhir_operation('Patient/$match', body: fhir_parameter)
-
-          if aPositiveTest
-            assert_response_status(200)
-
-            assert_resource_type(:bundle)
-          else
-            response_status = request.status
-
-            assert(response_status != 200, "FHIR endpoint returns results for profile IDI Patient " + aProfileLevel + 
-              " when input parameters are insuffiencient to not satisfy minimum requirements")
-          end
-        end
-      end
-    end
-
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'passport number', bLastName: false, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: true, bDL: false, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: "driver's license", bLastName: false, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: true, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'state id', bLastName: false, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bSTID: true, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: !aPositiveTest, test_description: 'address (address line and city)', bLastName: false, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: true, bCity: true, bPPN: false, bDL: false, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: !aPositiveTest, test_description: 'identifier', bLastName: false, bFirstName: false, bDOB: false, bIdentifier: true, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: !aPositiveTest, test_description: 'telecom (phone number)', bLastName: false, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: true, bAddress: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: !aPositiveTest, test_description: 'telecom (email)', bLastName: false, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bSTID: false, bEmail: true}
+    parameters << {profile_level: aProfileLevel, test_type: !aPositiveTest, test_description: 'family and given names', bLastName: true, bFirstName: true, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'first name and drivers license', bLastName: false, bFirstName: true, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: true, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'full name and date of birth and identifier', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: true, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'full name and date of birth and phone number', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: true, bAddress: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'full name and date of birth and email', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bSTID: false, bEmail: true}
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'full name and date of birth and address', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: true, bPPN: false, bDL: false, bSTID: false, bEmail: false}
+    
     #Input profile L1 validation    
     aProfileLevel = 'L1'
 
     #1. Input parameters not sufficient to return data
     aPositiveTest = false
 
-    parameters.clear
-    parameters << {test_description: 'full name, date of birth, and passport number', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: true, bDL: false, bEmail: false}
-    parameters << {test_description: 'full name, date of birth, and drivers license', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: true, bEmail: false}
-    parameters << {test_description: 'full name, date of birth, and identifier', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: true, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: false}
-    parameters << {test_description: 'full name, date of birth, and telecom', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: true, bAddress: false, bPPN: false, bDL: false, bEmail: false}
-    parameters << {test_description: 'full name, date of birth, and email', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bEmail: true}
-    parameters << {test_description: 'full name, date of birth, and address', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: true, bPPN: false, bDL: false, bEmail: false}
-       
-    #generate_match_input_tests( parameters, aProfileLevel, aPositiveTest )
-    #Create tests for base profile with minimum parameter specified that should return results
-    parameters.each do |parameter|
-      test do
-        test_description = parameter[:test_description].to_s
-        bLastName = parameter[:bLastName]
-        bFirstName = parameter[:bFirstName]
-        bDOB = parameter[:bDOB]
-        bIdentifier = parameter[:bIdentifier]
-        bTelecom = parameter[:bTelecom]
-        bAddress = parameter[:bAddress]
-        bPPN = parameter[:bPPN]
-        bDL = parameter[:bDL]
-        bEmail = parameter[:bEmail]
-
-        if aPositiveTest
-          aTestID = "minimum"
-          aTitle = ""
-          aDescription = ""
-        else
-          aTestID = "insufficient"
-          aTitle = "NOT"
-          aDescription = "no"
-        end
-
-        #test_id = ("patient_match_" + aProfileLevel + "_profile_" + aTestID + "_parameters_" + test_description.parameterize.underscore).to_sym
-        #id test_id
-        title "Patient $match for profile IDI Patient " + aProfileLevel + " with " + test_description + " SHOULD " + aTitle + " return data"
-        description "Verify that the Patient $match returns " + aDescription + " data for profile IDI Patient " + aProfileLevel + " with " + test_description
-
-        run do
-          aDOB = bDOB ? '1991-12-31' : nil
-          aPhone = bTelecom ? '555-555-5555' : nil
-          aStreetAddress = bAddress ? '135 Dolly Madison Pkwy' : nil
-          aCity = bAddress ? 'McLean' : nil
-          aMedicalRecordNumber = bIdentifier ? 'MS12121212' : nil
-          aLastName = bLastName ? 'Doe' : nil
-          aFirstName = bFirstName ? 'Jane' : nil
-          aPassportNumber = bPPN ? 'US53535353' : nil
-          aDriversLicenseNumber = bDL ? '999199912' : nil
-          aEmail = bEmail ? 'jane_doe@email.com' : nil
-      
-          baseMatchRequest = MatchRequest.new(aFullName, aDOB, aSex, aPhone, aEmail, aStreetAddress, aCity, aState, aPostalCode, aPassportNumber,
-            aDriversLicenseNumber, aStateID, aMasterPatientIndex, aMedicalRecordNumber, aInsuranceMemberNumber, aInsuranceSubscriberNumber, aSocialSecurity, 
-            aProfileLevel, aCertainMatchesOnly, aLastName, aFirstName, aMiddleName)
-
-          json_request = baseMatchRequest.build_request_fhir
-          fhir_parameter = FHIR.from_contents(json_request)
-
-          fhir_operation('Patient/$match', body: fhir_parameter)
-
-          if aPositiveTest
-            assert_response_status(200)
-
-            assert_resource_type(:bundle)
-          else
-            response_status = request.status
-
-            assert(response_status != 200, "FHIR endpoint returns results for profile IDI Patient " + aProfileLevel + 
-              " when input parameters are insuffiencient to not satisfy minimum requirements")
-          end
-        end
-      end
-    end
-
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'full name, date of birth, and passport number', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: true, bDL: false, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'full name, date of birth, and drivers license', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: true, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'full name, date of birth, and identifier', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: true, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'full name, date of birth, and telecom', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: true, bAddress: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'full name, date of birth, and email', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bSTID: false, bEmail: true}
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'full name, date of birth, and address', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: true, bPPN: false, bDL: false, bSTID: false, bEmail: false}
+ 
     #2. Input parameters minimum required to return data
     aPositiveTest = true
     
-    parameters.clear
-    parameters << {test_description: 'passport number, full name, date of birth, and identifier', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: true, bTelecom: false, bAddress: false, bPPN: true, bDL: false, bEmail: false}
-    parameters << {test_description: 'drivers license, full name, date of birth, and identifier', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: true, bTelecom: false, bAddress: false, bPPN: false, bDL: true, bEmail: false}
-    parameters << {test_description: 'passport number, full name, date of birth, and phone number', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: true, bAddress: false, bPPN: true, bDL: false, bEmail: false}
-    parameters << {test_description: 'passport number, full name, date of birth, and email', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: true, bDL: false, bEmail: true}
-    parameters << {test_description: 'passport number, full name, date of birth, and address', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: true, bPPN: true, bDL: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'passport number, full name, date of birth, and identifier', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: true, bTelecom: false, bAddress: false, bPPN: true, bDL: false, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'drivers license, full name, date of birth, and identifier', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: true, bTelecom: false, bAddress: false, bPPN: false, bDL: true, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'passport number, full name, date of birth, and phone number', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: true, bAddress: false, bPPN: true, bDL: false, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'passport number, full name, date of birth, and email', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: true, bDL: false, bSTID: false, bEmail: true}
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'passport number, full name, date of birth, and address', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: true, bPPN: true, bDL: false, bSTID: false, bEmail: false}
        
     #generate_match_input_tests(parameters, aProfileLevel, aPositiveTest)
     #Create tests for base profile with minimum parameter specified that should return results
     parameters.each do |parameter|
       test do
+        profile_level = parameter[:profile_level].to_s
+        positive_test = parameter[:test_type]
         test_description = parameter[:test_description].to_s
         bLastName = parameter[:bLastName]
         bFirstName = parameter[:bFirstName]
@@ -678,11 +301,13 @@ module IdentityMatching
         bIdentifier = parameter[:bIdentifier]
         bTelecom = parameter[:bTelecom]
         bAddress = parameter[:bAddress]
+        bCity = parameter[:bCity]
         bPPN = parameter[:bPPN]
         bDL = parameter[:bDL]
+        bSTID = parameter[:bSTID]
         bEmail = parameter[:bEmail]
 
-        if aPositiveTest
+        if positive_test
           aTestID = "minimum"
           aTitle = ""
           aDescription = ""
@@ -692,21 +317,22 @@ module IdentityMatching
           aDescription = "no"
         end
 
-        #test_id = ("patient_match_" + aProfileLevel + "_profile_" + aTestID + "_parameters_" + test_description.parameterize.underscore).to_sym
+        #test_id = ("patient_match_" + profile_level + "_profile_" + aTestID + "_parameters_" + test_description.parameterize.underscore).to_sym
         #id test_id
-        title "Patient $match for profile IDI Patient " + aProfileLevel + " with " + test_description + " SHOULD " + aTitle + " return data"
-        description "Verify that the Patient $match returns " + aDescription + " data for profile IDI Patient " + aProfileLevel + " with " + test_description
+        title "Client supporting IDI Patient " + profile_level + " with match input elements " + test_description + " SHOULD " + aTitle + " return data"
+        description "Verify that the Patient $match returns " + aDescription + " data for profile IDI Patient " + profile_level + " with " + test_description
 
         run do
           aDOB = bDOB ? '1991-12-31' : nil
           aPhone = bTelecom ? '555-555-5555' : nil
           aStreetAddress = bAddress ? '135 Dolly Madison Pkwy' : nil
-          aCity = bAddress ? 'McLean' : nil
+          aCity = bCity ? 'McLean' : nil
           aMedicalRecordNumber = bIdentifier ? 'MS12121212' : nil
           aLastName = bLastName ? 'Doe' : nil
           aFirstName = bFirstName ? 'Jane' : nil
           aPassportNumber = bPPN ? 'US53535353' : nil
           aDriversLicenseNumber = bDL ? '999199912' : nil
+          aStateID = bSTID ? 'VA55555534' : nil
           aEmail = bEmail ? 'jane_doe@email.com' : nil
       
           baseMatchRequest = MatchRequest.new(aFullName, aDOB, aSex, aPhone, aEmail, aStreetAddress, aCity, aState, aPostalCode, aPassportNumber,
@@ -718,20 +344,20 @@ module IdentityMatching
 
           fhir_operation('Patient/$match', body: fhir_parameter)
 
-          if aPositiveTest
+          if positive_test
             assert_response_status(200)
 
             assert_resource_type(:bundle)
           else
             response_status = request.status
 
-            assert(response_status != 200, "FHIR endpoint returns results for profile IDI Patient " + aProfileLevel + 
-              " when input parameters are insuffiencient to not satisfy minimum requirements")
+            assert(response_status != 200, "FHIR endpoint returns results for profile IDI Patient " + profile_level + 
+              " when input parameters are insuffiencient to satisfy minimum requirements")
           end
         end
       end
     end
-=end
+
     test do
       id :patient_match_advanced
       title 'Patient $match is valid for advanced search'
@@ -741,9 +367,6 @@ module IdentityMatching
 
       run do
         json_request = load_resource('test_queries/patient_match_search_parameter.json')
-        puts "======================="
-        puts "DEBUG: #{json_request}"
-        puts "======================="
         fhir_parameter = FHIR.from_contents(json_request)
 
         fhir_operation('Patient/$match', body: fhir_parameter, name: :match_operation_advanced)
@@ -838,8 +461,6 @@ module IdentityMatching
           if links != nil
             links.each do |link|
               linked_patient_id = link['other']['reference'].gsub("Patient/", "")
-              puts "Links: #{link}"
-              puts "Linked Patient ID: #{linked_patient_id} for patient #{patient_id}"
               
               fhir_read(:patient, linked_patient_id)
               assert_response_status(200)
@@ -850,13 +471,13 @@ module IdentityMatching
     end
 
     test do
-      id :return_patients_above_score_of_6
-      title "Server returns a bundle containing patient records with match score of 0.6 or above"
+      id :return_patients_above_score_of_5
+      title "Server returns a bundle containing patient records with match score of 0.5 or above"
       description %Q(
-        This test validates the bundle returned contains patient records with match score of 0.6 or above
+        This test validates the bundle returned contains patient records with match score of 0.5 or above
       )
 
-      output :matches_below_point_six
+      output :matches_below_point_five
       uses_request :match_operation_advanced
       run do
         response_json = JSON.parse(resource.to_json)
@@ -865,18 +486,17 @@ module IdentityMatching
 
         skip_if entries.nil? || entries.length == 0, 'This test is skipped since Patient $match returned no patient records'
 
-        patients_with_score_below_point_six = []
+        patients_with_score_below_point_five = []
 
         entries.each do |entry_item|
-          if entry_item['search']['score'] < 0.6
-            puts "Patient #{entry_item['resource']['id']} has match score of #{entry_item['search']['score'].to_s}"
-            patients_with_score_below_point_six << {patient_id: entry_item['resource']['id'], score: entry_item['search']['score']}
+          if entry_item['search']['score'] < 0.5
+            patients_with_score_below_point_five << {patient_id: entry_item['resource']['id'], score: entry_item['search']['score']}
           end
         end
 
-        assert patients_with_score_below_point_six.length == 0, "Server returns matches with score below 0.6 #{patients_with_score_below_point_six.to_s}"
+        assert patients_with_score_below_point_five.length == 0, "Server returns matches with score below 0.5 #{patients_with_score_below_point_five.to_s}"
 
-        output matches_below_point_six: patients_with_score_below_point_six.to_s
+        output matches_below_point_five: patients_with_score_below_point_five.to_s
       end
     end
 
@@ -909,8 +529,6 @@ module IdentityMatching
       run do
         request_json = request.request_body
 
-        puts "Request JSON: #{request_json}"
-
         matchRequest = MatchRequestJSON.new(request_json)
 
         output last_name: matchRequest.last_name, first_name: matchRequest.first_name, middle_name: matchRequest.middle_name, 
@@ -941,7 +559,6 @@ module IdentityMatching
 
           resource_type = entry_item['resource']['resourceType']
           patient_id = entry_item['resource']['id']
-          puts "Record Number: #{response_json['entry'].index}"
           
           assert resource_type != nil && resource_type == 'Patient', "Bundle does not have 'Patient' resource"
 
@@ -950,11 +567,9 @@ module IdentityMatching
             item_score = entry_item['search']['score']
 
             #Match identifiers
-            puts "Identifiers: #{@identifiers}"
             if !passport_number.nil? || !state_id.nil? || !drivers_license_number.nil? || !insurance_member_number.nil? ||
               !insurance_member_number.nil? || !medical_record_number.nil? || !master_patient_index.nil? || !social_security.nil?
               patient_identifiers = entry_item['resource']['identifier']
-              puts "Identifier: #{patient_identifiers}"
 
               if !patient_identifiers.nil?
                 patient_identifiers.each do |patient_identifier|
@@ -965,11 +580,8 @@ module IdentityMatching
                   identifier_coding.each do |coding|
                     identifier_system = coding['system']
                     identifier_code = coding['code'] == 'SS' && social_security != nil && social_security.length == 4 ? 'SS4': coding['code']
-                    puts "Identifier System: #{identifier_system}"
-                    puts "Identifier Code: #{identifier_code}"
                   end
                   identifier_value = patient_identifier['value'] 
-                  puts "Identifier Value: #{identifier_value}"
     
                   #Check for matching identifiers
                   if identifier_value != nil && identifier_code != nil
@@ -992,7 +604,6 @@ module IdentityMatching
             #Match names
             if !last_name.nil? || !first_name.nil? || !middle_name.nil?
               names = entry_item['resource']['name']
-              puts "Name: #{names}"
               if names != nil
                 names.each do |name|
                   family = name['family']
@@ -1003,10 +614,6 @@ module IdentityMatching
                     bMiddleInitial = true if middle_name.length == 1 && rGivenNames[1].length == 1 && rGivenNames[1][0,1] == @middle_name
                     bMiddleName = true if middle_name.length > 1 && rGivenNames[1].length > 1 && rGivenNames[1] == middle_name
                   end
-                  puts "Last Name: #{family}"
-                  puts "Given Names: #{rGivenNames}"
-                  puts "First Name: #{rGivenNames[0]}" if !rGivenNames.empty?
-                  puts "Middle Names #{rGivenNames[1]}" if rGivenNames.length > 1
                 end
               end
             end
@@ -1014,7 +621,6 @@ module IdentityMatching
             #Match phone number and email
             if !phone_number.nil? || !email.nil?
               aTelecom = entry_item['resource']['telecom']
-              puts "Telecom: #{aTelecom}"
               if aTelecom != nil
                 aTelecom.each do |telecom|
                   telecom_system = telecom['system']
@@ -1028,7 +634,6 @@ module IdentityMatching
             #Match address
             if !street_address.nil? || !city.nil? || !state.nil? || !postal_code.nil?
               aAddress = entry_item['resource']['address']
-              puts "Address: #{aAddress}"
               if aAddress != nil
                 aAddress.each do |address|
                   address_line = address['line'].flatten
