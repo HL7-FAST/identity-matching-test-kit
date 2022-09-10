@@ -363,7 +363,7 @@ module IdentityMatching
           else
             response_status = request.status
 
-            assert(response_status != 200, "FHIR endpoint does not reject the client request inconformant for profile IDI Patient" + profile_level + " with only the following match input element(s): " + test_description)
+            assert(response_status != 200, "FHIR endpoint does not reject a nonconformant client request for profile IDI Patient" + profile_level + " with only the following match input element(s): " + test_description)
           end
         end
       end
