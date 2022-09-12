@@ -53,7 +53,7 @@ module IdentityMatching
     group from: :identity_assurance
     group from: :patient_matching
     group from: :digital_identity
-    group from: :fhir_artifacts
+    # group from: :fhir_artifacts (redundant - weight tests are in section 4)
 
   end
 
