@@ -3,9 +3,22 @@ $VERBOSE = nil
 
 ENV['APP_ENV'] ||= 'test'
 
-require 'database_cleaner/sequel'
 require 'pry'
-require 'pry-byebug'
+require 'database_cleaner/sequel'
+
+require 'simplecov'
+SimpleCov.start do
+  enable_coverage :branch
+  add_filter '/spec/'
+  add_filter '/lib/inferno/db/migrations'
+  add_filter '/lib/inferno/db/schema.rb'
+  add_filter '/lib/inferno/apps/cli'
+end
+
+if ENV['GITHUB_ACTIONS']
+  require 'codecov'
+  SimpleCov.formatter = SimpleCov::Formatter::Codecov
+end
 
 require 'webmock/rspec'
 WebMock.disable_net_connect!
@@ -120,18 +133,12 @@ RSpec.configure do |config|
   end
 end
 
-require 'inferno/config/application'
-require 'inferno/utils/migration'
+require_relative '../lib/inferno/config/application'
+require_relative '../lib/inferno/utils/migration'
 Inferno::Utils::Migration.new.run
-
-require 'inferno'
 Inferno::Application.finalize!
 
-require Inferno::SpecSupport::FACTORY_BOT_SUPPORT_PATH
-
-FactoryBot.definition_file_paths = [
-  Inferno::SpecSupport::FACTORY_PATH
-]
+require_relative 'support/factory_bot'
 
 RSpec::Matchers.define_negated_matcher :exclude, :include
 
