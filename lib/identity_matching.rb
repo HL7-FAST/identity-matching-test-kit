@@ -64,6 +64,10 @@ module IdentityMatching
     group from: :patient_matching
     group from: :im_patient_match_manual#, exclude_optional: true
     group from: :digital_identity
+<<<<<<< HEAD
+=======
+    # group from: :fhir_artifacts (redundant - weight tests are in section 4)
+>>>>>>> 51dafbb8cd07f316ef28f105ac65fb1969cc208e
 
   end
 
