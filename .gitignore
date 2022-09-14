@@ -1,12 +1,7 @@
 /data/*.db
-/data/pg
-/data/redis
-/db/*.db
-/lib/inferno/public/assets*
-/lib/inferno/public/*.js
-/lib/inferno/public/*.LICENSE.txt
-/lib/inferno/public/*.png
-!/lib/inferno/public/logo*.png
+/data/redis/**/*.rdb
+/data/redis/**/*.aof
+/data/redis/**/*.manifest
 /tmp
 .env.local
 .env.*.local
@@ -20,9 +15,6 @@
 
 /coverage
 /spec/examples.txt
-/docs/docs
+/docs/yard
 .yardoc
 node_modules
-
-# webpack-bundle-analyzer report
-/report.html

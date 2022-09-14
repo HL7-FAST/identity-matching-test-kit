@@ -1,3 +1,3 @@
-require_relative 'lib/inferno/config/application'
+require 'inferno'
 
 Inferno::Application.finalize!
