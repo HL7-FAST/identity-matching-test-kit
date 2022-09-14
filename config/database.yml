@@ -1,13 +1,11 @@
-# ERB can be used to load values from the environment
 development:
   adapter: sqlite
-  database: <%= ENV.fetch('INFERNO_DB', 'data/inferno_development.db') %>
+  database: data/inferno_development.db
   max_connections: 10
-  # adapter: postgres
-  # database: inferno_development
-  # max_connections: 10
-  # user: postgres
-  # host: 127.0.0.1
+  # user:
+  # password:
+  # host:
+  # port:
 
 production:
   adapter: sqlite

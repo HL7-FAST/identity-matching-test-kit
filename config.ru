@@ -1,4 +1,4 @@
-require_relative 'lib/inferno'
+require 'inferno'
 
 use Rack::Static,
     urls: Inferno::Utils::StaticAssets.static_assets_map,

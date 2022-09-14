@@ -1,9 +1,11 @@
-/db/*.db
-/tmp
 .env.local
 .env.*.local
 .env.development
 .env.test
+Dockerfile
+.gitignore
+
+.byebug_history
 **/.DS_Store
 .vscode/*
 .project
@@ -14,12 +16,7 @@
 
 /coverage
 /data
-/docs/yard
-/.yardoc
-/node_modules
 /.git
 /.github
 /log
-Dockerfile
-.gitignore
-.byebug_history
+/tmp

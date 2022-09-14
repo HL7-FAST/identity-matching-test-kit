@@ -1,2 +1,0 @@
-#!/bin/sh
-yardoc --no-private --output-dir docs/docs -m markdown
