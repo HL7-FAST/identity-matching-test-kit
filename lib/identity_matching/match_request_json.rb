@@ -10,7 +10,7 @@ module IdentityMatching
         attr_reader( :patient_resource, :names, :last_name, :given_names, :first_name, :middle_name, :profile_level, :profile, :weight, :valid_profile,
         :date_of_birth,:sex, :phone_number, :email, :street_address, :city, :state, :postal_code, :passport_number, :drivers_license_number,
         :state_id, :master_patient_index, :medical_record_number, :insurance_member_number, :insurance_subscriber_number, :social_security, 
-        :identifiers, :address, :contact_points, :hasContactPoints, :records_to_return, :certain_matches_only)
+        :identifiers, :address, :contact_points, :hasContactPoints, :param_count, :certain_matches_only)
 
         def initialize (aJSONRequest)
             @json_request = JSON.parse(aJSONRequest)
@@ -37,7 +37,7 @@ module IdentityMatching
                         @weight = input_weight()
                         @valid_profile = input_matches_profile?
                     when 'count' then
-                        @records_to_return = parameter['valueInteger']
+                        @param_count = parameter['valueInteger']
                     when 'onlyCertainMatches' then
                         @certain_matches_only = parameter['valueBoolean']
                     end
@@ -48,7 +48,7 @@ module IdentityMatching
         def profile_details( aPatientRequest)
             @profile = aPatientRequest['meta']['profile']
             @profile_level = case @profile
-            when 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient' then 'Base'
+            when 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient' then 'base'
             when 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient-L0' then 'L0'
             when 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient-L1' then 'L1'
             else ''

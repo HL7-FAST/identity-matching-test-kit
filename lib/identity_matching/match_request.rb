@@ -1,5 +1,6 @@
 require 'json'
 require 'erb'
+require 'active_support/core_ext/string'
 
 module IdentityMatching
     class MatchRequest
@@ -107,9 +108,9 @@ module IdentityMatching
         end
 
         def profile_url(aProfileLevel)
-            @profile_level = aProfileLevel.titleize
+            @profile_level = aProfileLevel
             @profile = case aProfileLevel
-            when 'Base' then 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient'
+            when 'base' then 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient'
             when 'L0' then 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient-L0'
             when 'L1' then 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient-L1'
             else ''
@@ -159,7 +160,7 @@ module IdentityMatching
         end
 
         def certain_matches_only_to_boolean( aCertainMatchesOnly)
-            @certain_matches_only = aCertainMatchesOnly.downcase! == 'yes' ? true : false
+            @certain_matches_only = aCertainMatchesOnly
         end
     end
 end

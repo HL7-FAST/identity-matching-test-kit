@@ -230,7 +230,7 @@ module IdentityMatching
     aInsuranceMemberNumber = nil
     aInsuranceSubscriberNumber = nil
     aSocialSecurity = nil
-    aCertainMatchesOnly = 'no'
+    aCertainMatchesOnly = false
     aMiddleName = nil
 
     #Input profile Base validation    
@@ -269,6 +269,9 @@ module IdentityMatching
     parameters << {profile_level: aProfileLevel, test_type: !aPositiveTest, test_description: 'identifier and family and given names', bLastName: true, bFirstName: true, bDOB: false, bIdentifier: true, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
     parameters << {profile_level: aProfileLevel, test_type: !aPositiveTest, test_description: 'telecom (phone number) and family and given names', bLastName: true, bFirstName: true, bDOB: false, bIdentifier: false, bTelecom: true, bAddress: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
     parameters << {profile_level: aProfileLevel, test_type: !aPositiveTest, test_description: 'telecom (email) and family and given names', bLastName: true, bFirstName: true, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bSTID: false, bEmail: true}
+    parameters << {profile_level: aProfileLevel, test_type: !aPositiveTest, test_description: 'address (address line and city), identifier, and family and given names', bLastName: true, bFirstName: true, bDOB: false, bIdentifier: true, bTelecom: false, bAddress: true, bCity: true, bPPN: false, bDL: false, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: !aPositiveTest, test_description: 'address (address line and city), identifier, telecom (phone number), and family and given names', bLastName: true, bFirstName: true, bDOB: false, bIdentifier: true, bTelecom: true, bAddress: true, bCity: true, bPPN: false, bDL: false, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: !aPositiveTest, test_description: 'address (address line and city), identifier, telecom (phone number), telecom (email), and family and given names', bLastName: true, bFirstName: true, bDOB: false, bIdentifier: true, bTelecom: true, bAddress: true, bCity: true, bPPN: false, bDL: false, bSTID: false, bEmail: true}
     parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'address (address line and city), family and given names, and birth date', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: true, bCity: true, bPPN: false, bDL: false, bSTID: false, bEmail: false}
     parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'identifier, family and given names, and birth date', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: true, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
     parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'telecom (phone number), family and given names, and birth date', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: true, bAddress: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
@@ -283,9 +286,15 @@ module IdentityMatching
     parameters << {profile_level: aProfileLevel, test_type: !aPositiveTest, test_description: "driver's license", bLastName: false, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: true, bSTID: false, bEmail: false}
     parameters << {profile_level: aProfileLevel, test_type: !aPositiveTest, test_description: 'state id', bLastName: false, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bSTID: true, bEmail: false}
     parameters << {profile_level: aProfileLevel, test_type: !aPositiveTest, test_description: 'address (address line and city), family and given names, and birth date', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: true, bCity: true, bPPN: false, bDL: false, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: !aPositiveTest, test_description: 'address (address line and city), identifier, family and given names, and birth date', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: true, bTelecom: false, bAddress: true, bCity: true, bPPN: false, bDL: false, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: !aPositiveTest, test_description: 'address (address line and city), identifier, telecom (phone number), family and given names, and birth date', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: true, bTelecom: true, bAddress: true, bCity: true, bPPN: false, bDL: false, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: !aPositiveTest, test_description: 'address (address line and city), identifier, telecom (phone number), telecom (email), family and given names, and birth date', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: true, bTelecom: true, bAddress: true, bCity: true, bPPN: false, bDL: false, bSTID: false, bEmail: true}
     parameters << {profile_level: aProfileLevel, test_type: !aPositiveTest, test_description: 'identifier, family and given names, and birth date', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: true, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
     parameters << {profile_level: aProfileLevel, test_type: !aPositiveTest, test_description: 'telecom (phone number), family and given names, and birth date', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: true, bAddress: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
     parameters << {profile_level: aProfileLevel, test_type: !aPositiveTest, test_description: 'telecom (email), family and given names, and birth date', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bSTID: false, bEmail: true}
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: "passport number and driver's license", bLastName: false, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: true, bDL: true, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: "passport number and state id", bLastName: false, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: true, bDL: false, bSTID: true, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: "passport number, driver's license, and state id", bLastName: false, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: true, bDL: true, bSTID: true, bEmail: false}
     parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'passport number, address (address line and city), family and given names, and birth date', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: true, bCity: true, bPPN: true, bDL: false, bSTID: false, bEmail: false}
     parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'passport number, identifier, family and given names, and birth date', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: true, bTelecom: false, bAddress: false, bPPN: false, bDL: true, bSTID: false, bEmail: false}
     parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'passport number, telecom (phone number), family and given names, and birth date', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: true, bAddress: false, bPPN: true, bDL: false, bSTID: false, bEmail: false}
@@ -335,6 +344,7 @@ module IdentityMatching
 
         run do
           omit_if strict == 'false' or strict === false
+
           aDOB = bDOB ? '1991-12-31' : nil
           aPhone = bTelecom ? '555-555-5555' : nil
           aStreetAddress = bAddress ? '135 Dolly Madison Pkwy' : nil
@@ -350,8 +360,9 @@ module IdentityMatching
           baseMatchRequest = MatchRequest.new(aFullName, aDOB, aSex, aPhone, aEmail, aStreetAddress, aCity, aState, aPostalCode, aPassportNumber,
             aDriversLicenseNumber, aStateID, aMasterPatientIndex, aMedicalRecordNumber, aInsuranceMemberNumber, aInsuranceSubscriberNumber, aSocialSecurity, 
             aProfileLevel, aCertainMatchesOnly, aLastName, aFirstName, aMiddleName)
-
+  
           json_request = baseMatchRequest.build_request_fhir
+          
           fhir_parameter = FHIR.from_contents(json_request)
 
           fhir_operation('Patient/$match', body: fhir_parameter)
@@ -577,6 +588,7 @@ module IdentityMatching
       output :passport_number, :state_id, :drivers_license_number, :insurance_member_number, :insurance_subscriber_number, :medical_record_number,
         :master_patient_index, :social_security
       output :given_names, :identifiers, :contact_points, :address
+      output :profile_level, :certain_matches_only, :param_count
 
       #Hold unmatched score records
       unmatchedRecords = []
@@ -599,6 +611,8 @@ module IdentityMatching
           social_security: matchRequest.social_security
         output given_names: matchRequest.given_names, identifiers: matchRequest.identifiers, contact_points: matchRequest.contact_points,
           address: matchRequest.address
+        output profile_level: matchRequest.profile_level, certain_matches_only: matchRequest.certain_matches_only, param_count: matchRequest.param_count
+  
 
         response_json = JSON.parse(resource.to_json)
 
