@@ -65,7 +65,7 @@ module IdentityMatching
     end
 
     test do
-      title 'Test whether it is possible to gain access to patient data without authenticating'
+      title 'Server SHALL restrict access without authenticating'
       description %(Test whether it is possible to gain access to patient data without authenticating -
       This Test attempts to make a $match api call  without providing the authentication credentials)
       #TODO - Fix Description
@@ -231,18 +231,20 @@ module IdentityMatching
     aInsuranceSubscriberNumber = nil
     aSocialSecurity = nil
     aCertainMatchesOnly = false
+    aCount = nil
     aMiddleName = nil
 
     #Input profile Base validation    
-    aProfileLevel = '(base)'
+    aProfileLevel = 'base'
+    
     #Input parameters not sufficient to return data / Input parameters minimum required to return data
     aPositiveTest = true
 
     parameters = []
 
-    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'identifier', bLastName: false, bFirstName: true, bDOB: false, bIdentifier: true, bTelecom: false, bAddress: false, bCity: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
-    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'telecom (phone number)', bLastName: false, bFirstName: false, bDOB: true, bIdentifier: false, bTelecom: true, bAddress: false, bCity: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
-    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'telecom (email)', bLastName: false, bFirstName: false, bDOB: true, bIdentifier: false, bTelecom: true, bAddress: false, bCity: false, bPPN: false, bDL: false, bSTID: false, bEmail: true}
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'identifier', bLastName: false, bFirstName: false, bDOB: false, bIdentifier: true, bTelecom: false, bAddress: false, bCity: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'telecom (phone number)', bLastName: false, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: true, bAddress: false, bCity: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'telecom (email)', bLastName: false, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bCity: false, bPPN: false, bDL: false, bSTID: false, bEmail: true}
     parameters << {profile_level: aProfileLevel, test_type: !aPositiveTest, test_description: 'family name', bLastName: true, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bCity: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
     parameters << {profile_level: aProfileLevel, test_type: !aPositiveTest, test_description: 'given name', bLastName: false, bFirstName: true, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bCity: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
     parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'family and given names', bLastName: true, bFirstName: true, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bCity: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
@@ -252,13 +254,14 @@ module IdentityMatching
     parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'birth date', bLastName: false, bFirstName: false, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: false, bCity: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
 
     #Input profile L0 validation    
-    aProfileLevel = ' L0'
+    aProfileLevel = 'L0'
     #Input parameters not sufficient to return data / Input parameters minimum required to return data
     aPositiveTest = true
     
     parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'passport number', bLastName: false, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: true, bDL: false, bSTID: false, bEmail: false}
     parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: "driver's license", bLastName: false, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: true, bSTID: false, bEmail: false}
     parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'state id', bLastName: false, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bSTID: true, bEmail: false}
+    parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: "driver's license and state id", bLastName: false, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: true, bSTID: true, bEmail: false}
     parameters << {profile_level: aProfileLevel, test_type: !aPositiveTest, test_description: 'address (address line and city)', bLastName: false, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: false, bAddress: true, bCity: true, bPPN: false, bDL: false, bSTID: false, bEmail: false}
     parameters << {profile_level: aProfileLevel, test_type: !aPositiveTest, test_description: 'identifier', bLastName: false, bFirstName: false, bDOB: false, bIdentifier: true, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
     parameters << {profile_level: aProfileLevel, test_type: !aPositiveTest, test_description: 'telecom (phone number)', bLastName: false, bFirstName: false, bDOB: false, bIdentifier: false, bTelecom: true, bAddress: false, bPPN: false, bDL: false, bSTID: false, bEmail: false}
@@ -278,7 +281,7 @@ module IdentityMatching
     parameters << {profile_level: aProfileLevel, test_type: aPositiveTest, test_description: 'telecom (email), family and given names, and birth date', bLastName: true, bFirstName: true, bDOB: true, bIdentifier: false, bTelecom: false, bAddress: false, bPPN: false, bDL: false, bSTID: false, bEmail: true}
 
     #Input profile L1 validation    
-    aProfileLevel = ' L1'
+    aProfileLevel = 'L1'
     #Input parameters not sufficient to return data / Input parameters minimum required to return data
     aPositiveTest = true
 
@@ -313,6 +316,7 @@ module IdentityMatching
     parameters.each do |parameter|
       test do
         profile_level = parameter[:profile_level].to_s
+        profile_level_display = profile_level == 'base' ? "(#{profile_level})" : " #{profile_level}"
         positive_test = parameter[:test_type]
         test_description = parameter[:test_description].to_s
         bLastName = parameter[:bLastName]
@@ -339,8 +343,8 @@ module IdentityMatching
           aAdditionalDescription = "no"
         end
         
-        title "Server SHOULD #{aServerStatus} client request with#{aTitle2} following match input element(s) #{aTitle} in conformance with profile IDI Patient #{profile_level}: #{test_description}"
-        description "Verify that the Patient $match with following input element(s) returns #{aAdditionalDescription} response for profile IDI Patient #{profile_level}: #{test_description}"
+        title "Server SHOULD #{aServerStatus} client request with#{aTitle2} following match input element(s) #{aTitle} in conformance with profile IDI Patient #{profile_level_display}: #{test_description}"
+        description "Verify that the Patient $match with following input element(s) returns #{aAdditionalDescription} response for profile IDI Patient #{profile_level_display}: #{test_description}"
 
         run do
           omit_if strict == 'false' or strict === false
@@ -359,9 +363,11 @@ module IdentityMatching
       
           baseMatchRequest = MatchRequest.new(aFullName, aDOB, aSex, aPhone, aEmail, aStreetAddress, aCity, aState, aPostalCode, aPassportNumber,
             aDriversLicenseNumber, aStateID, aMasterPatientIndex, aMedicalRecordNumber, aInsuranceMemberNumber, aInsuranceSubscriberNumber, aSocialSecurity, 
-            aProfileLevel, aCertainMatchesOnly, aLastName, aFirstName, aMiddleName)
+            profile_level, aCertainMatchesOnly, aCount, aLastName, aFirstName, aMiddleName)
   
           json_request = baseMatchRequest.build_request_fhir
+
+          profile_display = baseMatchRequest.profile
           
           fhir_parameter = FHIR.from_contents(json_request)
 
@@ -374,7 +380,7 @@ module IdentityMatching
           else
             response_status = request.status
 
-            assert(response_status != 200, "FHIR endpoint does not reject a nonconformant client request for profile IDI Patient" + profile_level + " with only the following match input element(s): " + test_description)
+            assert(response_status != 200, "FHIR endpoint does not reject a nonconformant client request for profile IDI Patient" + profile_level_display + " with only the following match input element(s): " + test_description)
           end
         end
       end
@@ -430,6 +436,8 @@ module IdentityMatching
       run do
         omit_if strict == 'false' or strict === false
 
+        skip_if !resource.is_a?(FHIR::Bundle), 'No Bundle returned from match operation'
+
         response_json = JSON.parse(resource.to_json) # resource is body from response as FHIR::Model
         entries = response_json['entry']
 
@@ -441,7 +449,7 @@ module IdentityMatching
           if links != nil
             links.each do |link|
               link_type = link['type']
-              assert(link_type == 'replaced-by', "Patient $match returned patient with 'replaced-by' link that should no longer be used")
+              assert(link_type != 'replaced-by', "Patient $match returned patient with 'replaced-by' link that should no longer be used")
             end
           end
         end
@@ -460,6 +468,8 @@ module IdentityMatching
 
       run do
         omit_if strict == 'false' or strict === false
+        skip_if !resource.is_a?(FHIR::Bundle), 'No Bundle returned from match operation'
+
         response_json = resource.to_json # resource is body from response as FHIR::Model
 
         records_returned = resource.total
@@ -482,6 +492,8 @@ module IdentityMatching
 
       run do
         omit_if strict == 'false' or strict === false
+        skip_if !resource.is_a?(FHIR::Bundle), 'No Bundle returned from match operation'
+
         response_json = JSON.parse(resource.to_json) # resource is body from response as FHIR::Model
         entries = response_json['entry']
 
@@ -512,6 +524,7 @@ module IdentityMatching
       output :matches_out_of_range
       uses_request :match_operation_advanced
       run do
+        skip_if !resource.is_a?(FHIR::Bundle), 'No Bundle returned from match operation'
         response_json = JSON.parse(resource.to_json)
 
         entries = response_json['entry']
@@ -545,6 +558,8 @@ module IdentityMatching
       uses_request :match_operation_advanced
       run do        
         omit_if strict == 'false' or strict === false
+        skip_if !resource.is_a?(FHIR::Bundle), 'No Bundle returned from match operation'
+        
         response_json = JSON.parse(resource.to_json)
 
         entries = response_json['entry']
@@ -570,7 +585,7 @@ module IdentityMatching
 
     test do
       id :return_computed_score
-      title "Server SHOULD designate a grading of match quality using table in section 4.7 Scoring Matches & Responder's System Match Output Quality Score of the implementation guide"
+      title "Patient Match SHOULD designate a grading of match quality using table in section 4.7 Scoring Matches & Responder's System Match Output Quality Score of the implementation guide"
       description %Q(
         This test validates scores are calculated based on the Scoring Matches table in the implementation guide 
       )
@@ -584,7 +599,7 @@ module IdentityMatching
       item_score, computed_score_min, computed_score_max = 0.0, 0.0, 1.0
 
       #Declare output variables for parameters passed as json
-      output :last_name, :first_name, :middle_name, :date_of_birth, :sex, :phone_number, :email, :street_address, :city, :state, :postal_code
+      output :last_name, :first_name, :middle_name, :full_name, :date_of_birth, :sex, :phone_number, :email, :street_address, :city, :state, :postal_code
       output :passport_number, :state_id, :drivers_license_number, :insurance_member_number, :insurance_subscriber_number, :medical_record_number,
         :master_patient_index, :social_security
       output :given_names, :identifiers, :contact_points, :address
@@ -598,11 +613,13 @@ module IdentityMatching
 
       run do
         omit_if strict == 'false' or strict === false
+        skip_if !resource.is_a?(FHIR::Bundle), 'No Bundle returned from match operation'
+
         request_json = request.request_body
 
         matchRequest = MatchRequestJSON.new(request_json)
 
-        output last_name: matchRequest.last_name, first_name: matchRequest.first_name, middle_name: matchRequest.middle_name, 
+        output last_name: matchRequest.last_name, first_name: matchRequest.first_name, middle_name: matchRequest.middle_name, full_name: matchRequest.full_name,
           date_of_birth: matchRequest.date_of_birth, sex: matchRequest.sex, phone_number: matchRequest.phone_number, email: matchRequest.email,
           street_address: matchRequest.street_address, city: matchRequest.city, state: matchRequest.state, postal_code: matchRequest.postal_code
         output passport_number: matchRequest.passport_number, state_id: matchRequest.state_id, drivers_license_number: matchRequest.drivers_license_number,
@@ -612,7 +629,6 @@ module IdentityMatching
         output given_names: matchRequest.given_names, identifiers: matchRequest.identifiers, contact_points: matchRequest.contact_points,
           address: matchRequest.address
         output profile_level: matchRequest.profile_level, certain_matches_only: matchRequest.certain_matches_only, param_count: matchRequest.param_count
-  
 
         response_json = JSON.parse(resource.to_json)
 
@@ -762,7 +778,7 @@ module IdentityMatching
 
     test do
       id :sorting_response_by_score
-      title "Response from an 'MPI' query is a bundle containing patient records SHOULD be ordered from most likely to least likely"
+      title "Patient records SHOULD be ordered from most likely match to least likely in the bundle retuned from an 'MPI' query"
       description %Q(
         This test validates the bundle returned is sorted by the score from most likely to least likely
       )
@@ -771,6 +787,8 @@ module IdentityMatching
 
       run do
         omit_if strict == 'false' or strict === false
+        skip_if !resource.is_a?(FHIR::Bundle), 'No Bundle returned from match operation'
+
         response_json = JSON.parse(resource.to_json)
 
         entries = response_json['entry']

@@ -15,130 +15,129 @@ module IdentityMatching
     description 'Verify support for the $match operation required by the Patient Matching profile.'
     id :im_patient_match_manual
 
-    test do
-      id :patient_match_manual
-      title 'Server SHALL return a bundle resource for advanced $match operation'
-      description "Verify that the Patient $match resource returned from the server is a valid FHIR resource."
-
-      input :profile_level,
-
-      title: "IDI Profile (base | L0 | L1)",
+    input :profile_level,
+      title: "IDI Profile",
       optional: false,
       type: 'radio',
       default: 'base',
       options: {
         list_options: [
-          { label: 'base', value: 'Base' },
+          { label: 'Base', value: 'base' },
           { label: 'L0', value: 'L0' },
           { label: 'L1', value: 'L1' }
         ]}
 
-      input :certain_matches_only,
-        title: "Return only certain matches",
-        optional: false,
-        type: 'radio',
-        default: false,
-        options: {
-          list_options: [
-            { label: 'True', value: true },
-            { label: 'False', value: false }
-          ]}
-          
-      input :param_count,
-        title: "Number of patient resources to return",
-        optional: true
+    input :certain_matches_only,
+      title: "Specify onlyCertainMatches",
+      optional: false,
+      type: 'radio',
+      default: 'false',
+      options: {
+        list_options: [
+          { label: 'True', value: true },
+          { label: 'False', value: false }
+        ]}
+        
+    input :param_count,
+      title: "Count (matched records to return)",
+      optional: true
 
-      input :full_name,
-        title: 'Name',
-        optional: true
-      input :date_of_birth,
-        title: 'Date of Birth',
-        optional: true
-      input :sex,
-        title: 'Sex (assigned at birth)',
-        optional: true,
-        type: 'radio',
-        default: 'female',
-        options: {
-          list_options: [
-            { label: 'Female', value: 'female' },
-            { label: 'Male', value: 'male' }
-          ]}
+    input :full_name,
+      title: 'Name',
+      optional: true
+    input :date_of_birth,
+      title: 'Date of Birth',
+      optional: true
+    input :sex,
+      title: 'Sex (assigned at birth)',
+      optional: true,
+      type: 'radio',
+      default: 'na',
+      options: {
+        list_options: [
+          { label: 'Female', value: 'female' },
+          { label: 'Male', value: 'male' },
+          { label: 'Not specified', value: 'na' }
+        ]}
 
-      input :phone_number,
-        title: 'Phone Number',
-        optional: true
+    input :phone_number,
+      title: 'Phone Number',
+      optional: true
 
-      input :email,
-        title: 'Email Address',
-        optional: true
+    input :email,
+      title: 'Email Address',
+      optional: true
 
-      input :street_address,
-        title: 'Address - Street',
-        optional: true
-      input :city,
-        title: 'Address - City',
-        optional: true
-      input :state,
-        title: 'Address - State',
-        optional: true
-      input :postal_code,
-        title: 'Address - Postal Code',
-        optional: true
+    input :street_address,
+      title: 'Address - Street',
+      optional: true
+    input :city,
+      title: 'Address - City',
+      optional: true
+    input :state,
+      title: 'Address - State',
+      optional: true
+    input :postal_code,
+      title: 'Address - Postal Code',
+      optional: true
 
-      input :passport_number,
-        title: 'Passport Number',
-        optional: true
+    input :passport_number,
+      title: 'Passport Number',
+      optional: true
 
-      input :state_id,
-        title: 'State ID',
-        optional: true
+    input :state_id,
+      title: 'State ID',
+      optional: true
 
-      input :drivers_license_number,
-        title: "Driver's License Number",
-        optional: true
+    input :drivers_license_number,
+      title: "Driver's License Number",
+      optional: true
 
-      input :insurance_member_number,
-        title: 'Insurance Member Identifier',
-        optional: true
+    input :insurance_member_number,
+      title: 'Insurance Member Identifier',
+      optional: true
 
-      input :insurance_subscriber_number,
-        title: 'Insurance Subscriber Identifier',
-        optional: true
+    input :insurance_subscriber_number,
+      title: 'Insurance Subscriber Identifier',
+      optional: true
 
-      input :medical_record_number,
-        title: 'Medical Record Number',
-        optional: true
+    input :medical_record_number,
+      title: 'Medical Record Number',
+      optional: true
 
-      input :master_patient_index,
-        title: 'Master Patient Index',
-        optional: true
+    input :master_patient_index,
+      title: 'Master Patient Index',
+      optional: true
 
-      input :social_security,
-        title: 'Social Security Number',
-        optional: true
+    input :social_security,
+      title: 'Social Security Number',
+      optional: true
 
-      output :last_name, :given_names, :first_name, :middle_name, :identifiers, :contact_points, :address, :input_weight, :input_conforms_to_profile
+    output :last_name, :given_names, :first_name, :middle_name, :identifiers, :contact_points, :address, :input_weight, :input_conforms_to_profile
 
-      output :response_json
-      output :records_returned
-      output :match_response_resource
-      output :match_result
+    output :response_json
+    output :records_returned
+    output :match_response_resource
+    output :match_result
 
+    test do
+      id :patient_match_manual
+      title 'Server SHALL return a bundle resource for advanced $match operation'
+      description "Verify that the Patient $match resource returned from the server is a valid FHIR resource."
+
+      
       makes_request :match_operation_manual
 
       run do
         baseMatchRequest = MatchRequest.new(full_name, date_of_birth, sex, phone_number, email, street_address, city, state, postal_code,
           passport_number, drivers_license_number, state_id, master_patient_index, medical_record_number, insurance_member_number,
-          insurance_subscriber_number, social_security, profile_level, certain_matches_only, nil, nil, nil)
+          insurance_subscriber_number, social_security, profile_level, certain_matches_only, param_count, nil, nil, nil)
 
-        output last_name: baseMatchRequest.last_name
-        output first_name: baseMatchRequest.first_name
-        output middle_name: baseMatchRequest.middle_name
-        output given_names: baseMatchRequest.given_names
+        input_weight_local = baseMatchRequest.input_weight
+        input_conforms_to_profile_local = baseMatchRequest.input_matches_profile?
 
-        output input_weight: baseMatchRequest.input_weight
-        output input_conforms_to_profile: baseMatchRequest.input_matches_profile?
+        output last_name: baseMatchRequest.last_name, first_name: baseMatchRequest.first_name, middle_name: baseMatchRequest.middle_name,
+          given_names: baseMatchRequest.given_names, input_weight: input_weight_local, input_conforms_to_profile: input_conforms_to_profile_local
 
         json_request = baseMatchRequest.build_request_fhir
 
@@ -175,26 +174,87 @@ module IdentityMatching
     end
 
     test do
-      optional
+
+      id :patient_match_manual_certain_matches
+      title 'Server SHOULD validate conformance of match input element(s) for onlyCertainMatches parameter selected'
+      description "Server should accept or reject request based on conformance of the match input element(s) for value of parameter onlyCertainMatches selected"
+
+      uses_request :match_operation_manual
+      
+      run do
+        omit_if strict == 'false' or strict === false
+        skip_if !resource.is_a?(FHIR::Bundle), 'No Bundle returned from match operation'
+        response_json = JSON.parse(resource.to_json)
+
+        response_status = request.status
+
+        baseMatchRequest = MatchRequest.new(full_name, date_of_birth, sex, phone_number, email, street_address, city, state, postal_code,
+          passport_number, drivers_license_number, state_id, master_patient_index, medical_record_number, insurance_member_number,
+          insurance_subscriber_number, social_security, profile_level, certain_matches_only, param_count, nil, nil, nil)
+
+        input_weight_local = baseMatchRequest.input_weight
+        input_conforms_to_profile_local = baseMatchRequest.input_matches_profile?
+
+        last_name, first_name, middle_name, given_names, input_weight, input_conforms_to_profile = baseMatchRequest.last_name, baseMatchRequest.first_name,
+          baseMatchRequest.middle_name, baseMatchRequest.given_names,  input_weight_local, input_conforms_to_profile_local
+
+        server_accepts_response = response_status == 200 ? true : false
+        meet_certain_matches = true
+        meet_certain_matches = false if (certain_matches_only && (last_name.nil? || first_name.nil?))
+
+        assert_message = case 
+          when server_accepts_response == meet_certain_matches then ''
+          when server_accepts_response == true && meet_certain_matches == false then
+            "Server accepts a nonconformant client request with inadequate match input element(s) required for onlyCertainMatches"
+          when server_accepts_response == false && meet_certain_matches == true then
+            "Server rejects a conformant client request with match input element(s) required for onlyCertainMatches"
+          end
+
+        assert server_accepts_response == meet_certain_matches, assert_message
+      end
+    end
+
+    test do
+
       id :patient_match_manual_profile_to_input
-      title 'Server SHALL validate conformance of profile to input parameters passed'
-      description "Server will accept or reject request based on conformance to the profile selected to input parameters passed"
+      title 'Server SHALL validate conformance of match input element(s) for the profile selected'
+      description "Server will accept or reject request based on conformance of the match input element(s) for selected profile"
 
       uses_request :match_operation_manual
       
       run do
         skip_if !resource.is_a?(FHIR::Bundle), 'No Bundle returned from match operation'
+        response_json = JSON.parse(resource.to_json)
 
-        assert resource.entry.length.positive?, 'Bundle has no entries'
+        response_status = request.status
 
-        entry = resource.entry.first
+        baseMatchRequest = MatchRequest.new(full_name, date_of_birth, sex, phone_number, email, street_address, city, state, postal_code,
+          passport_number, drivers_license_number, state_id, master_patient_index, medical_record_number, insurance_member_number,
+          insurance_subscriber_number, social_security, profile_level, certain_matches_only, param_count, nil, nil, nil)
 
-        assert entry.resource.is_a?(FHIR::Patient), 'The first entry in the Bundle is not a Patient'
+        input_weight_local = baseMatchRequest.input_weight
+        input_conforms_to_profile_local = baseMatchRequest.input_matches_profile?
+
+        last_name, first_name, middle_name, given_names, input_weight, input_conforms_to_profile = baseMatchRequest.last_name, baseMatchRequest.first_name,
+          baseMatchRequest.middle_name, baseMatchRequest.given_names,  input_weight_local, input_conforms_to_profile_local
+
+        server_accepts_response = response_status == 200 ? true : false
+        profile_level_display = profile_level == 'base' ? "(#{profile_level})" : " #{profile_level}"
+
+        assert_message = case 
+          when server_accepts_response == input_conforms_to_profile then ''
+          when server_accepts_response == true && input_conforms_to_profile == false then
+            "Server accepts a nonconformant client request with inadequate match input element(s) required for profile IDI Patient#{profile_level_display}"
+          when server_accepts_response == false && input_conforms_to_profile == true then
+            "Server rejects a conformant client request with match input element(s) required for profile IDI Patient#{profile_level_display}"
+          end
+
+        assert server_accepts_response == input_conforms_to_profile, assert_message
       end
     end
 
     test do
-      optional
+
       id :search_identity_to_identity_manual
       title 'Server matching and searching SHOULD be Identity-to-Identity, not Record-to-Record'
       description %Q(
@@ -216,7 +276,7 @@ module IdentityMatching
           if links != nil
             links.each do |link|
               link_type = link['type']
-              assert(link_type == 'replaced-by', "Patient $match returned patient with 'replaced-by' link that should no longer be used")
+              assert(link_type != 'replaced-by', "Patient $match returned patient with 'replaced-by' link that should no longer be used")
             end
           end
         end
@@ -224,30 +284,7 @@ module IdentityMatching
     end
 
     test do
-      optional
-      id :every_valid_record_manual
-      title 'Server SHOULD return every candidate identity, subject to volume limits'
-      description %Q(
-        Match output SHOULD contain every record of every candidate identity, subject to volume limits
-      )
 
-      # Use saved request/response from fhir_operation call in previous test
-      uses_request :match_operation_manual
-
-      run do
-        omit_if strict == 'false' or strict === false
-        response_json = resource.to_json # resource is body from response as FHIR::Model
-
-        records_returned = resource.total
-
-        #There should be 3 records that are returned
-        assert(records_returned >= 3, "Patient $match returned only #{records_returned} records while there are at least 3 patient records")
-      end
-
-    end
-
-    test do
-      optional
       id :patient_link_valid_manual
       title "Server SHOULD indicate linkage between records by the Patient.link field"
       description %Q(
@@ -280,7 +317,7 @@ module IdentityMatching
     end
 
     test do
-      optional
+
       id :return_patients_score_range_output
       title "Patient Match SHALL return a score between 0 and 1 for each matched patient resource"
       description %Q(
@@ -313,7 +350,7 @@ module IdentityMatching
     end
 
     test do
-      optional
+
       id :return_matched_patients_score_below_point_five_manual
       title "Patient Match SHOULD only return matched patient resource with a score above 0.5"
       description %Q(
@@ -348,7 +385,7 @@ module IdentityMatching
     end
 
     test do
-      optional
+
       id :return_computed_score_manual
       title "Server SHOULD designate a grading of match quality using table in section 4.7 Scoring Matches & Responder's System Match Output Quality Score of the implementation guide"
       description %Q(
@@ -373,6 +410,18 @@ module IdentityMatching
         omit_if strict == 'false' or strict === false
 
         response_json = JSON.parse(resource.to_json)
+
+        response_status = request.status
+
+        baseMatchRequest = MatchRequest.new(full_name, date_of_birth, sex, phone_number, email, street_address, city, state, postal_code,
+          passport_number, drivers_license_number, state_id, master_patient_index, medical_record_number, insurance_member_number,
+          insurance_subscriber_number, social_security, profile_level, certain_matches_only, param_count, nil, nil, nil)
+
+        input_weight_local = baseMatchRequest.input_weight
+        input_conforms_to_profile_local = baseMatchRequest.input_matches_profile?
+
+        last_name, first_name, middle_name, given_names, input_weight, input_conforms_to_profile = baseMatchRequest.last_name, baseMatchRequest.first_name,
+          baseMatchRequest.middle_name, baseMatchRequest.given_names,  input_weight_local, input_conforms_to_profile_local
 
         entries = response_json['entry']
 
@@ -519,7 +568,7 @@ module IdentityMatching
     end
 
     test do
-      optional
+
       id :sorting_response_by_score_manual_match
       title "Response from an 'MPI' query is a bundle containing patient records SHOULD be ordered from most likely to least likely"
       description %Q(
@@ -531,6 +580,18 @@ module IdentityMatching
       run do
         omit_if strict == 'false' or strict === false
         response_json = JSON.parse(resource.to_json)
+
+        response_status = request.status
+
+        baseMatchRequest = MatchRequest.new(full_name, date_of_birth, sex, phone_number, email, street_address, city, state, postal_code,
+          passport_number, drivers_license_number, state_id, master_patient_index, medical_record_number, insurance_member_number,
+          insurance_subscriber_number, social_security, profile_level, certain_matches_only, param_count, nil, nil, nil)
+
+        input_weight_local = baseMatchRequest.input_weight
+        input_conforms_to_profile_local = baseMatchRequest.input_matches_profile?
+
+        last_name, first_name, middle_name, given_names, input_weight, input_conforms_to_profile = baseMatchRequest.last_name, baseMatchRequest.first_name,
+          baseMatchRequest.middle_name, baseMatchRequest.given_names,  input_weight_local, input_conforms_to_profile_local
 
         entries = response_json['entry']
 

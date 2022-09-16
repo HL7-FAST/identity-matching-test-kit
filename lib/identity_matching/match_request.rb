@@ -10,18 +10,19 @@ module IdentityMatching
 
         attr_accessor( :full_name, :date_of_birth, :sex, :phone_number, :email, :street_address, :city, :state, :postal_code, 
             :passport_number, :drivers_license_number, :state_id, :master_patient_index, :medical_record_number, :insurance_member_number, 
-            :insurance_subscriber_number, :social_security, :identifiers, :address, :contact_points, :hasContactPoints)
+            :insurance_subscriber_number, :social_security, :identifiers, :address, :contact_points, :hasContactPoints, :certain_matches_only,
+            :count)
 
-        attr_reader( :certain_matches_only )
+        attr_reader( :certain_matches_only)
 
         resource_path = File.join(__dir__, '..', '..', 'resources', 'search_parameter.json.erb')
         MATCH_PARAMETER = ERB.new(File.read(resource_path))
 
         def initialize (aFullName, aDOB, aSex, aPhone, aEmail, aStreetAddress, aCity, aState, aPostalCode, aPassportNumber,
             aDriversLicenseNumber, aStateID, aMasterPatientIndex, aMedicalRecordNumber, aInsuranceMemberNumber, 
-            aInsuranceSubscriberNumber, aSocialSecurity, aProfileLevel, aCertainMatchesOnly, aLastName, aFirstName, aMiddleName)
+            aInsuranceSubscriberNumber, aSocialSecurity, aProfileLevel, aCertainMatchesOnly, aCount, aLastName, aFirstName, aMiddleName)
             @full_name = aFullName
-            @sex = aSex
+            @sex = aSex == 'female' || aSex == 'male' ? aSex : nil
             @date_of_birth = aDOB
             @phone_number = aPhone
             @email = aEmail
@@ -37,6 +38,8 @@ module IdentityMatching
             @insurance_member_number = aInsuranceMemberNumber
             @insurance_subscriber_number = aInsuranceSubscriberNumber
             @social_security = aSocialSecurity
+            @certain_matches_only = aCertainMatchesOnly
+            @count = aCount
 
             if !aFullName.nil? 
                 get_names( aFullName.to_s)
@@ -56,8 +59,6 @@ module IdentityMatching
             @address = address()
 
             profile_url( aProfileLevel)
-
-            certain_matches_only_to_boolean( aCertainMatchesOnly)
         end
 
         # for FHIR artifact id generation
@@ -147,9 +148,9 @@ module IdentityMatching
 
         def input_matches_profile?
             @valid_profile = false
-            @valid_profile = if (@profile_level != nil && (@profile_level == 'Base' || @profile_level == 'L0'|| @profile_level == 'L1')) && (@last_name != nil || @given_names != nil) then 
+            @valid_profile = if (@profile_level != nil && (@profile_level == 'base' || @profile_level == 'L0'|| @profile_level == 'L1')) then 
                 case
-                    when @profile_level == 'Base' && (@identifiers != nil || @phone_number != nil || 
+                    when @profile_level == 'base' && (@identifiers != nil || @phone_number != nil || 
                         (@last_name != nil && @given_names != nil) || (@street_address != nil && @city != nil)
                         @date_of_birth != nil) then true
                     when @profile_level == 'L0' && @weight >= 10 then true
@@ -157,10 +158,6 @@ module IdentityMatching
                     else false
                 end 
                 else false end
-        end
-
-        def certain_matches_only_to_boolean( aCertainMatchesOnly)
-            @certain_matches_only = aCertainMatchesOnly
         end
     end
 end

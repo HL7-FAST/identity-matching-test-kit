@@ -57,7 +57,7 @@ module IdentityMatching
           resourcePath = patient[:path]
 
           fhir_read(:patient, patientID)
-          if request.status = 200
+          if request.status == 200
             record_creation_status = record_creation_status + "Patient ID: " + patientID + " already exists; "
           else
             patient_json = load_resource(resourcePath)

@@ -39,18 +39,7 @@ module IdentityMatching
           { label: 'False', value: false }
         ]
       }
-=begin
-      input :manual_patient_matching,
-        title: 'Enable manual patient matching',
-        type: 'radio',
-        default: 'false',
-        options: {
-          list_options: [
-            { label: 'True', value: true },
-            { label: 'False', value: false }
-          ]
-        }
-=end
+  
     # All FHIR requests in this suite will use this FHIR client
     fhir_client do
       url :url
@@ -62,13 +51,7 @@ module IdentityMatching
 
     group from: :identity_assurance
     group from: :patient_matching
-    group from: :im_patient_match_manual#, exclude_optional: true
+    group from: :im_patient_match_manual
     group from: :digital_identity
-<<<<<<< HEAD
-=======
-    # group from: :fhir_artifacts (redundant - weight tests are in section 4)
->>>>>>> 51dafbb8cd07f316ef28f105ac65fb1969cc208e
-
   end
-
 end

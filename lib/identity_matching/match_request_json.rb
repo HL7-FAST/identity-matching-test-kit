@@ -7,7 +7,7 @@ module IdentityMatching
     class MatchRequestJSON
         attr_accessor( :json_request)
 
-        attr_reader( :patient_resource, :names, :last_name, :given_names, :first_name, :middle_name, :profile_level, :profile, :weight, :valid_profile,
+        attr_reader( :patient_resource, :names, :last_name, :given_names, :first_name, :middle_name, :full_name, :profile_level, :profile, :weight, :valid_profile,
         :date_of_birth,:sex, :phone_number, :email, :street_address, :city, :state, :postal_code, :passport_number, :drivers_license_number,
         :state_id, :master_patient_index, :medical_record_number, :insurance_member_number, :insurance_subscriber_number, :social_security, 
         :identifiers, :address, :contact_points, :hasContactPoints, :param_count, :certain_matches_only)
@@ -46,12 +46,21 @@ module IdentityMatching
         end
 
         def profile_details( aPatientRequest)
-            @profile = aPatientRequest['meta']['profile']
-            @profile_level = case @profile
-            when 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient' then 'base'
-            when 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient-L0' then 'L0'
-            when 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient-L1' then 'L1'
-            else ''
+            profiles = aPatientRequest['meta']['profile']
+            @profile, @profile_level = '', ''
+            if !profiles.nil?
+                profiles.each do |profile_local|
+                    if profile_local == 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient' ||
+                        profile_local == 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient-L0' ||
+                        profile_local == 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient-L1'
+                        @profile = profile_local
+                        @profile_level = case @profile
+                            when 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient' then 'base'
+                            when 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient-L0' then 'L0'
+                            when 'http://hl7.org/fhir/us/identity-matching/StructureDefinition/IDI-Patient-L1' then 'L1'
+                        end
+                    end
+                end
             end
         end
 
@@ -65,6 +74,10 @@ module IdentityMatching
                         @first_name = @given_names[0]
                         @middle_name = @given_names[1] if @given_names.length > 1
                     end
+                    @full_name = ''
+                    @full_name << @first_name + ' ' if !@first_name.nil?
+                    @full_name << @middle_name + ' ' if !@middle_name.nil?
+                    @full_name << @last_name if !@last_name.nil?
                 end
             end
         end

@@ -87,5 +87,11 @@
       "name": "onlyCertainMatches",
       "valueBoolean": "<%= model.certain_matches_only %>"
     }
+    <% if !model.count.nil? %>
+    , {
+      "name": "count",
+      "valueInteger": "<%= model.count %>"
+    }
+    <% end %>
   ]
 }
