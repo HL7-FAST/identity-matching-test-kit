@@ -11,7 +11,6 @@ guide specifications.
 ## Quickstart
  1. Launch Docker daemon
  2. Clone repository: `git clone https://github.com/HL7-FAST/identity-matching-test-kit`
-    + TODO: ruby gem download option
  3. Enter repository: `cd identity-matching-test-kit`
  4. Build test kit container: `./setup.sh`
  5. Launch test kit: `./run.sh`
