@@ -534,11 +534,11 @@ module IdentityMatching
 
             #Calculate min and max scores for each match condition listed in 
             case
-              when bMRN then computed_score_min, computed_score_max = 0.8, 0.99
-              when bMPI then computed_score_min, computed_score_max = 0.8, 0.99
-              when bFirstName && bLastName && bPassportNumber then computed_score_min, computed_score_max = 0.8, 0.99
-              when bFirstName && bLastName && bDriversLicense then computed_score_min, computed_score_max = 0.8, 0.99
-              when bFirstName && bLastName && bInsuranceMemberNumber then computed_score_min, computed_score_max = 0.8, 0.99
+              when bMRN then computed_score_min, computed_score_max = 0.8, 1.0
+              when bMPI then computed_score_min, computed_score_max = 0.8, 1.0
+              when bFirstName && bLastName && bPassportNumber then computed_score_min, computed_score_max = 0.8, 1.0
+              when bFirstName && bLastName && bDriversLicense then computed_score_min, computed_score_max = 0.8, 1.0
+              when bFirstName && bLastName && bInsuranceMemberNumber then computed_score_min, computed_score_max = 0.8, 1.0
               when bFirstName && bLastName && bDateOfBirth && bInsuranceSubscriberNumber then computed_score_min, computed_score_max = 0.7, 0.8
               when bFirstName && bLastName && bSocialSecurityNumber then computed_score_min, computed_score_max = 0.7, 0.8
               when bFirstName && bLastName && bInsuranceSubscriberNumber then computed_score_min, computed_score_max = 0.7, 0.8
